@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-purple-light flex justify-between items-center p-4 shadow-md max-w-screen-xl mx-auto">
+    <div class="flex justify-between w-full items-center border-b-2 p-4">
       <!-- Logo -->
       <h1 class="text-xl font-bold text-purple-dark">Music App</h1>
   
