@@ -1,12 +1,13 @@
 <template>
-  <div class="min-h-screen w-full flex flex-col items-center p-2 bg-gradient-to-b from-pink-200 via-pink-100 to-purple-100 relative">
+  <div class="min-h-screen w-full flex flex-col items-center relative" style="top: -7px;">
     <!-- Header -->
     <HeaderComponent/>
+    <SlideComponent />
 
     <!-- Slide Section (Carousel) -->
-    <div class="mt-8 w-full">
+    <!-- <div class="mt-8 w-full">
       <SlideComponent />
-    </div>
+    </div> -->
 
     <!-- Login and Avatar Section -->
     <div class="mt-8 flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-8 relative">
