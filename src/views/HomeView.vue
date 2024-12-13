@@ -1,9 +1,11 @@
 <script setup>
-import TheWelcome from '../components/TheWelcome.vue'
+import HeroSection from '@/components/HeroSection.vue';
+import ContentGrid from '@/components/ContentGrid.vue';
 </script>
 
 <template>
-  <main>
-    <TheWelcome />
-  </main>
+  <div class="flex w-full justify-start">
+    <HeroSection/>
+  </div>
+  <ContentGrid/>
 </template>

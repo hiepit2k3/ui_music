@@ -1,18 +1,18 @@
 <template>
-  <div class="absolute top-0 left-0 w-full flex justify-between items-center p-4 z-50 bg-transparent">
+  <div class="top-0 left-0 w-full flex justify-between items-center p-4 z-50 bg-transparent">
     <!-- Logo -->
-    <h1 class="text-xl font-bold text-white">Music App</h1>
+    <img src="../assets/image/logo.png" alt="">
 
     <!-- Menu Điều Hướng (ẩn trên màn hình nhỏ) -->
     <div class="hidden md:flex space-x-8">
-      <button class="text-white hover:underline">Home</button>
-      <button class="text-white hover:underline">Features</button>
-      <button class="text-white hover:underline">Pricing</button>
+      <router-link to="/" class="text-pink-600 font-semibold no-underline hover:underline">Home</router-link>
+      <router-link to="/" class="text-pink-600 font-semibold no-underline hover:underline">Features</router-link>
+      <router-link to="/" class="text-pink-600 font-semibold no-underline hover:underline">Pricing</router-link>
     </div>
 
     <div class="flex space-x-4">
-      <button class="text-white hover:underline">Login</button>
-      <button class="text-white hover:underline">Register</button>
+      <button class="text-pink-600 px-6 py-3 font-semibolds no-underline hover:underline hover:rounded-lg">Login</button>
+      <button class="bg-pink-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-pink-500 transition no-underline hover:underline">Register</button>
     </div>
 
     <!-- Nút Burger -->
@@ -148,5 +148,8 @@ export default {
 <style scoped>
 button {
   cursor: pointer;
+}
+.no-underline {
+  text-decoration: none;
 }
 </style>
