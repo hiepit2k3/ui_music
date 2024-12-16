@@ -1,41 +1,45 @@
+<script setup>
+import Card from "./Card.vue";
+</script>
 <template>
-    <div class="content-grid bg-white w-2/3 p-8 rounded-lg shadow-lgs">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Card Items -->
-        <Card
-          v-for="(item, index) in playlists"
-          :key="index"
-          :title="item.title"
-          :image="item.image"
-        />
-      </div>
-    </div>
+  <div class="mt-8 flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-8">
+    <Card
+      v-for="(card, index) in cards"
+      :key="index"
+      :title="card.title"
+      :classFather="card.classFather"
+      :image="card.image"
+      :classchild="card.classchild"
+    />
+  </div>
 </template>
-  
-  <script>
-  import Card from "./Card.vue"; // Import component Card (ở dưới)
-  
-  export default {
-    name: "ContentGrid",
-    components: {
-      Card,
-    },
-    data() {
-      return {
-        playlists: [
-          { title: "Chill Vibes", image: "playlist1.png" },
-          { title: "Road Trip", image: "playlist2.png" },
-          { title: "Relax & Unwind", image: "playlist3.png" },
-          { title: "Party Hits", image: "playlist4.png" },
-          { title: "Focus Mode", image: "playlist5.png" },
-          { title: "Throwback", image: "playlist6.png" },
-        ],
-      };
-    },
-  };
-  </script>
-  
-  <style scoped>
-  /* Thêm style nếu cần */
-  </style>
-  
+
+<script>
+export default {
+  name: "ContentGrid",
+
+  data() {
+    return {
+      cards: [
+        {
+          title:"Room music",
+          classFather: "bg-white rounded-lg",
+          image: 'src/assets/image/icon_music.jpg',
+          classchild: 'rounded-full',
+        },
+        {
+          title: 'List music',
+          classFather: "bg-white rounded-lg",
+          image: 'src/assets/image/icon_list_music.jpg',
+          classchild: 'rounded-lg',
+        },
+        // Thêm nhiều đối tượng nữa nếu cần
+      ],
+    };
+  },
+};
+</script>
+
+<style scoped>
+/* Thêm style nếu cần */
+</style>

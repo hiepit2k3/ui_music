@@ -4,8 +4,5 @@ import ContentGrid from '@/components/ContentGrid.vue';
 </script>
 
 <template>
-  <div class="flex w-full justify-start">
-    <HeroSection/>
-  </div>
   <ContentGrid/>
 </template>

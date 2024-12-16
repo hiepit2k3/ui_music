@@ -1,15 +1,25 @@
 <template>
-<div class="min-h-screen w-full flex flex-col items-center relative" style="top: -7px;">
-    <!-- Header -->
-    <HeaderComponent />
-    <!-- <SlideComponent /> -->
+    <div class="min-h-screen w-full flex flex-col items-center relative">
+        <div class="w-full md::min-h-screen md::bg-cover bg-center"
+            style="background-image: url(src/assets/image/background_main.jpg);">   
+            <!-- Gradient chỉ ở phía dưới -->
+            <div class="absolute bottom-0 left-0 w-full"></div>
 
-    <!-- Slide Section (Carousel) -->
-    <!-- <div class="mt-8 w-full">
+            <!-- Header và HeroSection -->
+            <HeaderComponent />
+            <div class="relative flex w-full justify-start z-10">
+                <HeroSection />
+            </div>
+        </div>
+
+        <!-- <SlideComponent /> -->
+
+        <!-- Slide Section (Carousel) -->
+        <!-- <div class="mt-8 w-full">
       <SlideComponent />
     </div> -->
 
-    <!-- <div class="mt-8 flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-8 relative">
+        <!-- <div class="mt-8 flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-8 relative">
         <div class="absolute inset-0 -z-10 overflow-hidden">
             <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
                 <path fill="#fbcfe8" fill-opacity="0.8" d="M0,64L40,85.3C80,107,160,149,240,181.3C320,213,400,235,480,240C560,245,640,235,720,208C800,181,880,139,960,138.7C1040,139,1120,181,1200,176C1280,171,1360,117,1400,90.7L1440,64L1440,320L1400,320C1360,320,1280,320,1200,320C1120,320,1040,320,960,320C880,320,800,320,720,320C640,320,560,320,480,320C400,320,320,320,240,320C160,320,80,320,40,320L0,320Z"></path>
@@ -30,8 +40,19 @@
         &copy; 2024 Music for Couples. All rights reserved.
     </footer> -->
 
-    <router-view></router-view>
-</div>
+        <router-view></router-view>
+
+        <BackgroundDecorations>
+            <div class="relative z-10 text-center p-10">
+                <h1 class="text-4xl font-bold text-pink-600">Feel the Love in Every Beat</h1>
+                <p class="text-gray-600 mt-4">Discover the music that touches your soul.</p>
+            </div>
+        </BackgroundDecorations>
+
+        <footer class="mt-8 text-center text-gray-600 text-sm">
+            &copy; 2024 Music for Couples. All rights reserved.
+        </footer>
+    </div>
 </template>
 
 <script>
@@ -41,6 +62,8 @@ import AvatarComponent from "./components/AvatarComponent.vue";
 import RoomCodeComponent from "./components/RoomCodeComponent.vue";
 import ProfileComponent from "./components/ProfileComponent.vue";
 import SlideComponent from "./components/SlideComponent.vue";
+import BackgroundDecorations from "./components/BackgroundDecorations.vue";
+import HeroSection from "./components/HeroSection.vue";
 
 export default {
     components: {
@@ -50,6 +73,8 @@ export default {
         RoomCodeComponent,
         ProfileComponent,
         SlideComponent,
+        HeroSection,
+        BackgroundDecorations,
     },
 };
 </script>
