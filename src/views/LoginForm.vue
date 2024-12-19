@@ -16,7 +16,6 @@
                     class="block text-gray-600 cursor-text text-sm leading-[140%] font-normal mb-2">Password</label>
                 <input type="text" id="password" v-model="password"
                     class="rounded border border-gray-200 text-sm w-full font-normal leading-[18px] text-black tracking-[0px] appearance-none block h-11 m-0 p-[11px] focus:ring-2 ring-offset-2 ring-gray-900 outline-0">
-
             </div>
             <div>
                 <a class="text-sm text-[#7747ff]" href="#">Forgot your password?
@@ -32,6 +31,8 @@
 </template>
 
 <script>
+import { axiosInstance } from "@/services/authAxios";
+
 export default {
     name: "LoginForm",
     data() {
@@ -41,14 +42,22 @@ export default {
         };
     },
     methods: {
-        handleLogin() {
-            console.log("Logging in with:", this.email, this.password);
-            // Thêm logic xử lý đăng nhập ở đây
+        async handleLogin() {
+            try {
+                const response = await axiosInstance.post("login", {
+                    email: this.email,
+                    password: this.password,
+                });
+
+                console.log("Đăng nhập thành công:", response.data);
+
+                // Lưu thông tin user hoặc token vào Vuex/Pinia hoặc điều hướng đến trang khác
+                this.$router.push("/"); // Ví dụ điều hướng sau khi đăng nhập
+            } catch (error) {
+                console.error("Lỗi đăng nhập:", error.response?.data || error.message);
+                alert("Đăng nhập không thành công. Vui lòng thử lại!");
+            }
         },
     },
 };
 </script>
-
-<style scoped>
-/* Để giữ style gọn gàng, Tailwind CSS đã đảm nhận phần lớn */
-</style>

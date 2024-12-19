@@ -10,6 +10,7 @@ import Card from "./Card.vue";
       :classFather="card.classFather"
       :image="card.image"
       :classchild="card.classchild"
+      :to = "card.url"
     />
   </div>
 </template>
@@ -26,12 +27,14 @@ export default {
           classFather: "bg-white rounded-lg",
           image: 'src/assets/image/icon_music.jpg',
           classchild: 'rounded-full',
+          url:'/roommusic'
         },
         {
           title: 'List music',
           classFather: "bg-white rounded-lg",
           image: 'src/assets/image/icon_list_music.jpg',
           classchild: 'rounded-lg',
+          url: "/listmusic"
         },
         // Thêm nhiều đối tượng nữa nếu cần
       ],
