@@ -10,7 +10,10 @@
 
       <!-- Progress Bar -->
       <div class="relative w-full h-2 bg-pink-300 rounded-lg overflow-hidden mb-4">
-        <div class="absolute top-0 left-0 h-full bg-pink-500 transition-all" :style="{ width: `${progress}%` }"></div>
+        <div
+          class="absolute top-0 left-0 h-full bg-pink-500 transition-all"
+          :style="{ width: `${progress}%` }"
+        ></div>
       </div>
       <div class="flex justify-between text-pink-800 text-sm">
         <span>{{ currentTimeFormatted }}</span>
@@ -18,16 +21,22 @@
       </div>
 
       <div class="flex justify-center mt-4 space-x-4">
-        <button @click="prevTrack"
-          class="w-12 h-12 flex justify-center items-center bg-pink-300 rounded-full shadow-md hover:scale-110 transition-transform">
+        <button
+          @click="prevTrack"
+          class="w-12 h-12 flex justify-center items-center bg-pink-300 rounded-full shadow-md hover:scale-110 transition-transform"
+        >
           ⏮️
         </button>
-        <button @click="playPause"
-          class="w-16 h-16 flex justify-center items-center bg-pink-400 rounded-full shadow-md hover:scale-110 transition-transform">
+        <button
+          @click="playPause"
+          class="w-16 h-16 flex justify-center items-center bg-pink-400 rounded-full shadow-md hover:scale-110 transition-transform"
+        >
           {{ isPlaying ? '⏸️' : '▶️' }}
         </button>
-        <button @click="nextTrack"
-          class="w-12 h-12 flex justify-center items-center bg-pink-300 rounded-full shadow-md hover:scale-110 transition-transform">
+        <button
+          @click="nextTrack"
+          class="w-12 h-12 flex justify-center items-center bg-pink-300 rounded-full shadow-md hover:scale-110 transition-transform"
+        >
           ⏭️
         </button>
       </div>
@@ -36,9 +45,15 @@
     <!-- List of Songs -->
     <div class="mb-6">
       <ul class="space-y-4">
-        <li v-for="(track, index) in tracks" :key="index" class="relative">
-          <button @click="selectTrack(index)"
-            class="w-full text-left px-4 py-2 bg-pink-50 rounded-lg shadow-sm hover:bg-pink-100 transition duration-300">
+        <li
+          v-for="(track, index) in tracks"
+          :key="index"
+          class="relative"
+        >
+          <button
+            @click="selectTrack(index)"
+            class="w-full text-left px-4 py-2 bg-pink-50 rounded-lg shadow-sm hover:bg-pink-100 transition duration-300"
+          >
             {{ track.name }}
           </button>
         </li>
@@ -46,8 +61,14 @@
     </div>
 
     <!-- Hidden iframe -->
-    <iframe ref="youtubePlayer"
-      class="hidden"></iframe>
+    <iframe
+      ref="youtubePlayer"
+      :src="audioUrl"
+      frameborder="0"
+      allow="autoplay"
+      allowfullscreen
+      class="hidden"
+    ></iframe>
   </div>
 </template>
 
@@ -55,12 +76,10 @@
 export default {
   data() {
     return {
-      isPlaying: false, // Ban đầu dừng
+      isPlaying: true,
       currentTrackIndex: 0,
       currentTime: 0,
       duration: 0,
-      player: null, // YouTube Player
-      playerReady: false, // Thêm cờ kiểm tra player đã sẵn sàng chưa
       tracks: [
         { name: 'Bài Hát 1', url: '5H3SC47cBpo' },
         { name: 'Bài Hát 2', url: 'dQw4w9WgXcQ' },
@@ -71,6 +90,9 @@ export default {
   computed: {
     videoId() {
       return this.tracks[this.currentTrackIndex].url;
+    },
+    audioUrl() {
+      return `https://www.youtube.com/embed/${this.videoId}?autoplay=1&controls=0&modestbranding=1&showinfo=0&rel=0`;
     },
     trackName() {
       return this.tracks[this.currentTrackIndex].name;
@@ -86,50 +108,13 @@ export default {
     },
   },
   methods: {
-    initializePlayer() {
-      this.player = new YT.Player(this.$refs.youtubePlayer, {
-        videoId: this.videoId,
-        events: {
-          onReady: this.onPlayerReady,
-          onStateChange: this.onPlayerStateChange,
-        },
-      });
-    },
-    onPlayerReady(event) {
-      this.duration = event.target.getDuration();
-      this.playerReady = true; // Đánh dấu player đã sẵn sàng
-    },
-    onPlayerStateChange(event) {
-      if (event.data === YT.PlayerState.PLAYING) {
-        this.isPlaying = true;
-        this.trackProgress();
-      } else {
-        this.isPlaying = false;
-      }
-    },
-    trackProgress() {
-      if (this.isPlaying) {
-        this.currentTime = Math.floor(this.player.getCurrentTime());
-        setTimeout(this.trackProgress, 1000); // Cập nhật mỗi giây
-      }
-    },
     playPause() {
-      if (!this.playerReady) {
-        console.error("Player chưa sẵn sàng, đang đợi...");
-        // Kiểm tra lại sau một khoảng thời gian khi player sẵn sàng
-        const checkPlayerReadyInterval = setInterval(() => {
-          if (this.playerReady) {
-            clearInterval(checkPlayerReadyInterval); // Dừng kiểm tra khi player đã sẵn sàng
-            this.playPause(); // Gọi lại playPause() sau khi player sẵn sàng
-          }
-        }, 500); // Kiểm tra mỗi 500ms
-        return;
-      }
-
+      this.isPlaying = !this.isPlaying;
+      const iframe = this.$refs.youtubePlayer;
       if (this.isPlaying) {
-        this.player.pauseVideo();
+        iframe.src = this.audioUrl; // Replay
       } else {
-        this.player.playVideo();
+        iframe.src = ''; // Stop
       }
     },
     prevTrack() {
@@ -138,7 +123,7 @@ export default {
       } else {
         this.currentTrackIndex = this.tracks.length - 1;
       }
-      this.loadTrack();
+      this.isPlaying = true;
     },
     nextTrack() {
       if (this.currentTrackIndex < this.tracks.length - 1) {
@@ -146,19 +131,11 @@ export default {
       } else {
         this.currentTrackIndex = 0;
       }
-      this.loadTrack();
+      this.isPlaying = true;
     },
     selectTrack(index) {
       this.currentTrackIndex = index;
-      this.loadTrack();
-    },
-    loadTrack() {
-      this.isPlaying = false;
-      this.currentTime = 0;
-      this.duration = 0;
-      if (this.playerReady) {
-        this.player.loadVideoById(this.videoId);
-      }
+      this.isPlaying = true;
     },
     formatTime(seconds) {
       const minutes = Math.floor(seconds / 60);
@@ -167,19 +144,13 @@ export default {
     },
   },
   mounted() {
-    // Tải YouTube Iframe API chỉ một lần
-    if (!window.YT) {
-      const tag = document.createElement('script');
-      tag.src = 'https://www.youtube.com/iframe_api';
-      const firstScriptTag = document.getElementsByTagName('script')[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-      // Khi API YouTube sẵn sàng, gọi initializePlayer
-      window.onYouTubeIframeAPIReady = this.initializePlayer;
-    } else {
-      this.initializePlayer();
-    }
+    // Mock duration & progress (YouTube iframe API can also be integrated)
+    this.duration = 240; // Example duration: 4 minutes
+    setInterval(() => {
+      if (this.isPlaying && this.currentTime < this.duration) {
+        this.currentTime++;
+      }
+    }, 1000);
   },
 };
-
 </script>
