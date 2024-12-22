@@ -21,7 +21,7 @@ export default {
 
   data() {
     return {
-      cards: [
+      numbers: [
         {
           title:"Room music",
           classFather: "bg-white rounded-lg",

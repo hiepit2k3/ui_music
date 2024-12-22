@@ -1,156 +1,368 @@
+<script setup>
+import Playlist from '@/components/Playlist.vue';
+import CardNumberRoom from '@/components/CardNumberRoom.vue';
+import { ref, reactive, onMounted } from "vue";
+
+const isPlaylistHovered = ref(false);
+const isSearchHovered = ref(false);
+const isPlaying = ref(false);
+const youtubePlayer = ref(null);
+
+const musicState = reactive({
+  songTitle: "Song Title",
+  artistName: "Artist Name",
+  youtubeVideoId: "stvWuowo1dU",
+  numbers: [
+    {
+      avatar: "src/assets/image/avatar_A.jpg",
+      username: "User A",
+      userStatus: 'Listening',
+    },
+    {
+      avatar: "src/assets/image/boy.jpg",
+      username: "User B",
+      userStatus: 'Listening',
+    },
+  ],
+});
+
+function handleMusicListMouseEnter() {
+  isPlaylistHovered.value = true;
+}
+
+function handleMusicListMouseLeave() {
+  isPlaylistHovered.value = false;
+}
+
+function handleMusicSearchMouseEnter() {
+  isSearchHovered.value = true;
+}
+
+function handleMusicSearchMouseLeave() {
+  isSearchHovered.value = false;
+}
+
+function musicPlayerClass() {
+  const isHovered = isPlaylistHovered.value || isSearchHovered.value;
+  return {
+    'md:col-span-2': isHovered,
+    'md:col-span-3': !isHovered,
+    'transform scale-100 transition-transform duration-300': true,
+  };
+}
+
+function musicListClass() {
+  return {
+    'md:col-span-2': isPlaylistHovered.value,
+    'transform scale-100 transition-transform duration-300': true,
+  };
+}
+
+function musicSearchClass() {
+  return {
+    'md:col-span-2': isSearchHovered.value,
+    'transform scale-100 transition-transform duration-300': true,
+  };
+}
+
+function togglePlayPause() {
+  if (youtubePlayer.value) {
+    if (isPlaying.value) {
+      youtubePlayer.value.pauseVideo();
+    } else {
+      youtubePlayer.value.playVideo();
+    }
+    isPlaying.value = !isPlaying.value;
+  } else {
+    console.warn("Player chưa được khởi tạo!");
+  }
+}
+
+function nextSong() {
+  if (youtubePlayer.value) {
+    musicState.youtubeVideoId = "nextVideoId"; // Cập nhật ID video
+    youtubePlayer.value.loadVideoById(musicState.youtubeVideoId);
+    isPlaying.value = true;
+  } else {
+    console.warn("Player chưa được khởi tạo!");
+  }
+}
+
+function previousSong() {
+  if (youtubePlayer.value) {
+    musicState.youtubeVideoId = "previousVideoId"; // Cập nhật ID video
+    youtubePlayer.value.loadVideoById(musicState.youtubeVideoId);
+    isPlaying.value = true;
+  } else {
+    console.warn("Player chưa được khởi tạo!");
+  }
+}
+
+function initializePlayer() {
+  youtubePlayer.value = new YT.Player("youtube-player", {
+    height: "100%",
+    width: "100%",
+    videoId: musicState.youtubeVideoId,
+    events: {
+      onReady: (event) => {
+        console.log("Player ready", event);
+      },
+      onStateChange: (event) => {
+        if (event.data === YT.PlayerState.ENDED) {
+          nextSong();
+        }
+      },
+    },
+  });
+}
+
+onMounted(() => {
+  if (typeof YT === "undefined" || typeof YT.Player === "undefined") {
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName("script")[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    window.onYouTubeIframeAPIReady = initializePlayer;
+  } else {
+    initializePlayer();
+  }
+});
+</script>
+
 <template>
-  <div class="max-w-3xl mx-auto p-6 bg-pink-100 rounded-lg shadow-xl relative">
-    <h1 class="text-4xl font-bold text-center text-pink-800 mb-6 tracking-wider">Phòng Nghe Nhạc</h1>
+  <div class="min-h-screen flex justify-center items-center p-4 md:p-8">
+    <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-6xl">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <!-- Search Bar -->
+        <div @mouseover="handleMusicSearchMouseEnter" @mouseleave="handleMusicSearchMouseLeave"
+          :class="musicSearchClass()"
+          class="col-span-1 bg-gradient-to-b from-pink-200 via-pink-100 to-purple-100 p-4 rounded-lg shadow-md hover:scale-105">
+          <div class="relative">
+            <input placeholder="Search..."
+              class="input shadow-lg focus:border-2 border-gray-300 rounded-xl w-full transition-all focus:w-full outline-none p-2 pr-10"
+              name="search" type="search" />
+            <svg class="absolute top-3 right-3 text-gray-500 w-5 h-5" stroke="currentColor" stroke-width="1.5"
+              viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
+                stroke-linejoin="round" stroke-linecap="round" />
+            </svg>
+          </div>
+        </div>
 
-    <!-- Music Player -->
-    <div class="relative bg-pink-200 p-6 rounded-xl shadow-lg mb-6">
-      <div class="text-center">
-        <p class="text-2xl font-medium text-pink-800 mb-4">{{ trackName }}</p>
+        <!-- Main Music Player -->
+        <div :class="musicPlayerClass()"
+          class="col-span-1 bg-pink-200 p-3 rounded-lg shadow-md relative transition-transform duration-300 hover:scale-105"
+          id="music-player">
+
+          <!-- Ảnh nền -->
+          <div class="rounded-lg overflow-hidden">
+            <img src="../assets/image/background_music.jpg" alt="Album art"
+              class="w-full h-40 object-cover rounded-lg transition-transform duration-300 hover:scale-110" />
+          </div>
+
+          <!-- Tên bài hát & Nghệ sĩ -->
+          <div class="mt-4 text-center">
+            <h2 class="text-lg font-semibold text-gray-700">{{ musicState.songTitle }}</h2>
+            <p class="text-sm text-gray-500">{{ musicState.artistName }}</p>
+          </div>
+
+          <!-- Trình phát YouTube -->
+          <div class="mt-4">
+            <div ref="youtubePlayer" id="youtube-player" class="w-full h-40 rounded-lg"></div>
+          </div>
+
+          <!-- Thanh điều khiển -->
+          <div class="flex items-center justify-between mt-4">
+            <button @click="previousSong" class="text-gray-500 hover:text-pink-500">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button @click="togglePlayPause"
+              class="bg-pink-500 text-white p-3 rounded-full shadow-lg hover:bg-pink-600">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor" class="w-6 h-6">
+                <path v-if="!isPlaying" stroke-linecap="round" stroke-linejoin="round" d="M5 3v18l15-9L5 3z" />
+                <path v-else stroke-linecap="round" stroke-linejoin="round" d="M6 4h4v16H6zm8 0h4v16h-4z" />
+              </svg>
+            </button>
+            <button @click="nextSong" class="text-gray-500 hover:text-pink-500">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Thanh tiến trình -->
+          <div class="mt-4">
+            <div class="h-2 bg-gray-200 rounded-full">
+              <div class="h-2 bg-pink-500 rounded-full w-1/2"></div>
+            </div>
+          </div>
+          <div class="mt-2 flex justify-between text-sm text-gray-500">
+            <span>0:00</span>
+            <span>3:45</span>
+          </div>
+        </div>
+
+        <!-- Playlist -->
+        <div @mouseover="handleMusicListMouseEnter" @mouseleave="handleMusicListMouseLeave" :class="musicListClass()"
+          class="col-span-1 bg-gradient-to-b from-pink-200 via-pink-100 to-purple-100 p-4 rounded-lg shadow-md transition-transform duration-300 hover:scale-105"
+          id="playlist">
+          <Playlist />
+        </div>
       </div>
 
-      <!-- Progress Bar -->
-      <div class="relative w-full h-2 bg-pink-300 rounded-lg overflow-hidden mb-4">
-        <div
-          class="absolute top-0 left-0 h-full bg-pink-500 transition-all"
-          :style="{ width: `${progress}%` }"
-        ></div>
-      </div>
-      <div class="flex justify-between text-pink-800 text-sm">
-        <span>{{ currentTimeFormatted }}</span>
-        <span>{{ durationFormatted }}</span>
-      </div>
-
-      <div class="flex justify-center mt-4 space-x-4">
-        <button
-          @click="prevTrack"
-          class="w-12 h-12 flex justify-center items-center bg-pink-300 rounded-full shadow-md hover:scale-110 transition-transform"
-        >
-          ⏮️
-        </button>
-        <button
-          @click="playPause"
-          class="w-16 h-16 flex justify-center items-center bg-pink-400 rounded-full shadow-md hover:scale-110 transition-transform"
-        >
-          {{ isPlaying ? '⏸️' : '▶️' }}
-        </button>
-        <button
-          @click="nextTrack"
-          class="w-12 h-12 flex justify-center items-center bg-pink-300 rounded-full shadow-md hover:scale-110 transition-transform"
-        >
-          ⏭️
-        </button>
+      <!-- Equalizer Section -->
+      <div class="mt-6 bg-pink-200 p-6 rounded-lg shadow-md">
+        <h2 class="text-lg font-semibold text-gray-700 mb-4">Member</h2>
+        <div class="flex justify-center flex-wrap gap-4">
+          <CardNumberRoom v-for="(number, index) in musicState.numbers" :key="index" :avatar="number.avatar"
+            :username="number.username" :userStatus="number.userStatus" />
+        </div>
       </div>
     </div>
-
-    <!-- List of Songs -->
-    <div class="mb-6">
-      <ul class="space-y-4">
-        <li
-          v-for="(track, index) in tracks"
-          :key="index"
-          class="relative"
-        >
-          <button
-            @click="selectTrack(index)"
-            class="w-full text-left px-4 py-2 bg-pink-50 rounded-lg shadow-sm hover:bg-pink-100 transition duration-300"
-          >
-            {{ track.name }}
-          </button>
-        </li>
-      </ul>
-    </div>
-
-    <!-- Hidden iframe -->
-    <iframe
-      ref="youtubePlayer"
-      :src="audioUrl"
-      frameborder="0"
-      allow="autoplay"
-      allowfullscreen
-      class="hidden"
-    ></iframe>
   </div>
 </template>
 
-<script>
+<!-- <script>
+import { onMounted, ref } from "vue";
+
 export default {
   data() {
     return {
-      isPlaying: true,
-      currentTrackIndex: 0,
-      currentTime: 0,
-      duration: 0,
-      tracks: [
-        { name: 'Bài Hát 1', url: '5H3SC47cBpo' },
-        { name: 'Bài Hát 2', url: 'dQw4w9WgXcQ' },
-        { name: 'Bài Hát 3', url: '3JZ_D3ELwOQ' },
+      isPlaylistHovered: false,
+      isSearchHovered: false,
+      numbers: [
+        {
+          avatar: "src/assets/image/avatar_A.jpg",
+          username: "User A",
+          userStatus: 'Listning'
+        },
+        {
+          avatar: "src/assets/image/boy.jpg",
+          username: "User B",
+          userStatus: 'Listning'
+        },
       ],
+
+      songTitle: "Song Title",
+      artistName: "Artist Name",
+      youtubeVideoId: "dQw4w9WgXcQ",
+      isPlaying: false,
     };
   },
-  computed: {
-    videoId() {
-      return this.tracks[this.currentTrackIndex].url;
-    },
-    audioUrl() {
-      return `https://www.youtube.com/embed/${this.videoId}?autoplay=1&controls=0&modestbranding=1&showinfo=0&rel=0`;
-    },
-    trackName() {
-      return this.tracks[this.currentTrackIndex].name;
-    },
-    progress() {
-      return this.duration > 0 ? (this.currentTime / this.duration) * 100 : 0;
-    },
-    currentTimeFormatted() {
-      return this.formatTime(this.currentTime);
-    },
-    durationFormatted() {
-      return this.formatTime(this.duration);
-    },
-  },
   methods: {
-    playPause() {
-      this.isPlaying = !this.isPlaying;
-      const iframe = this.$refs.youtubePlayer;
-      if (this.isPlaying) {
-        iframe.src = this.audioUrl; // Replay
+    handleMusicListMouseEnter() {
+      this.isPlaylistHovered = true;
+    },
+    handleMusicListMouseLeave() {
+      this.isPlaylistHovered = false;
+    },
+    handleMusicSearchMouseEnter() {
+      this.isSearchHovered = true;
+    },
+    handleMusicSearchMouseLeave() {
+      this.isSearchHovered = false;
+    },
+    musicPlayerClass() {
+      const isHovered = this.isPlaylistHovered || this.isSearchHovered;
+      return {
+        'md:col-span-2': isHovered,
+        'md:col-span-3': !isHovered,
+        'transform scale-100 transition-transform duration-300': true,
+      };
+    },
+    musicListClass() {
+      return {
+        'md:col-span-2': this.isPlaylistHovered,
+        'transform scale-100 transition-transform duration-300': true,
+      };
+    },
+    musicSearchClass() {
+      return {
+        'md:col-span-2': this.isSearchHovered,
+        'transform scale-100 transition-transform duration-300': true,
+      };
+    },
+    togglePlayPause() {
+      if (this.player) {
+        if (this.isPlaying) {
+          this.player.pauseVideo();
+        } else {
+          this.player.playVideo();
+        }
+        this.isPlaying = !this.isPlaying;
       } else {
-        iframe.src = ''; // Stop
+        console.warn("Player chưa được khởi tạo!");
       }
     },
-    prevTrack() {
-      if (this.currentTrackIndex > 0) {
-        this.currentTrackIndex--;
+    nextSong() {
+      if (this.player) {
+        this.youtubeVideoId = "nextVideoId"; // Cập nhật ID video
+        this.player.loadVideoById(this.youtubeVideoId);
+        this.isPlaying = true;
       } else {
-        this.currentTrackIndex = this.tracks.length - 1;
+        console.warn("Player chưa được khởi tạo!");
       }
-      this.isPlaying = true;
     },
-    nextTrack() {
-      if (this.currentTrackIndex < this.tracks.length - 1) {
-        this.currentTrackIndex++;
+    previousSong() {
+      if (this.player) {
+        this.youtubeVideoId = "previousVideoId"; // Cập nhật ID video
+        this.player.loadVideoById(this.youtubeVideoId);
+        this.isPlaying = true;
       } else {
-        this.currentTrackIndex = 0;
+        console.warn("Player chưa được khởi tạo!");
       }
-      this.isPlaying = true;
     },
-    selectTrack(index) {
-      this.currentTrackIndex = index;
-      this.isPlaying = true;
-    },
-    formatTime(seconds) {
-      const minutes = Math.floor(seconds / 60);
-      const secs = Math.floor(seconds % 60);
-      return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+
+    loadVideo() {
+      if (this.player) {
+        this.player.loadVideoById(this.youtubeVideoId);
+      }
     },
   },
   mounted() {
-    // Mock duration & progress (YouTube iframe API can also be integrated)
-    this.duration = 240; // Example duration: 4 minutes
-    setInterval(() => {
-      if (this.isPlaying && this.currentTime < this.duration) {
-        this.currentTime++;
-      }
-    }, 1000);
+    if (this.$refs.youtubePlayer) {
+    this.initializePlayer();
+  } else {
+    console.error("YouTube Player ref is undefined!");
+  }
+    if (typeof YT === "undefined" || typeof YT.Player === "undefined") {
+      // Nếu API chưa được tải, theo dõi sự kiện tải
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      const firstScriptTag = document.getElementsByTagName("script")[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+      // Khởi tạo sau khi API sẵn sàng
+      window.onYouTubeIframeAPIReady = this.initializePlayer;
+    } else {
+      // Nếu API đã tải, khởi tạo ngay lập tức
+      this.initializePlayer();
+    }
   },
+  methods: {
+    initializePlayer() {
+      this.player = new YT.Player("youtube-player", {
+        height: "100%",
+        width: "100%",
+        videoId: this.youtubeVideoId,
+        events: {
+          onReady: (event) => {
+            console.log("Player ready", event);
+          },
+          onStateChange: (event) => {
+            if (event.data === YT.PlayerState.ENDED) {
+              this.nextSong();
+            }
+          },
+        },
+      });
+    },
+  }
 };
-</script>
+</script> -->
