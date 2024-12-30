@@ -1,10 +1,9 @@
 import axios from "axios";
 
-const API_URL = "http://127.0.0.1:8000/api/v1/";
+const API_URL = "http://localhost:3000/auth/";
 
 export const axiosInstance = axios.create({
   baseURL: API_URL,
-  withCredentials: true, // Cookie sẽ được gửi kèm
   headers: {
     "Content-Type": "application/json",
   },
@@ -12,7 +11,7 @@ export const axiosInstance = axios.create({
 
 export const axiosPrivateInstance = axios.create({
   baseURL: API_URL,
-  withCredentials: true, // Cookie sẽ được gửi kèm
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },

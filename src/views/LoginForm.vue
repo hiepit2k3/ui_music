@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import { axiosInstance } from "@/services/authAxios";
+import { axiosInstance, axiosPrivateInstance } from "@/services/authAxios";
 
 export default {
     name: "LoginForm",
@@ -44,15 +44,12 @@ export default {
     methods: {
         async handleLogin() {
             try {
-                const response = await axiosInstance.post("login", {
+                const response = await axiosPrivateInstance.post("/login", {
                     email: this.email,
                     password: this.password,
                 });
-
                 console.log("Đăng nhập thành công:", response.data);
-
-                // Lưu thông tin user hoặc token vào Vuex/Pinia hoặc điều hướng đến trang khác
-                this.$router.push("/"); // Ví dụ điều hướng sau khi đăng nhập
+                alert("Đăng nhập thành công!");
             } catch (error) {
                 console.error("Lỗi đăng nhập:", error.response?.data || error.message);
                 alert("Đăng nhập không thành công. Vui lòng thử lại!");
