@@ -1,7 +1,7 @@
 <script setup>
 import Playlist from '@/components/Playlist.vue';
 import CardNumberRoom from '@/components/CardNumberRoom.vue';
-import { ref, reactive, onMounted } from "vue";
+import { ref, reactive, onMounted, onUnmounted } from "vue";
 
 const isPlaylistHovered = ref(false);
 const isSearchHovered = ref(false);
@@ -25,6 +25,8 @@ const musicState = reactive({
     },
   ],
 });
+
+let socket = null;
 
 function handleMusicListMouseEnter() {
   isPlaylistHovered.value = true;
@@ -69,8 +71,10 @@ function togglePlayPause() {
   if (youtubePlayer.value) {
     if (isPlaying.value) {
       youtubePlayer.value.pauseVideo();
+      sendMessage("pause", {});
     } else {
       youtubePlayer.value.playVideo();
+      sendMessage("play", {});
     }
     isPlaying.value = !isPlaying.value;
   } else {
@@ -80,9 +84,10 @@ function togglePlayPause() {
 
 function nextSong() {
   if (youtubePlayer.value) {
-    musicState.youtubeVideoId = "nextVideoId"; // Cập nhật ID video
+    musicState.youtubeVideoId = "nextVideoId"; // Cập nhật ID video thực tế
     youtubePlayer.value.loadVideoById(musicState.youtubeVideoId);
     isPlaying.value = true;
+    sendMessage("next", { videoId: musicState.youtubeVideoId });
   } else {
     console.warn("Player chưa được khởi tạo!");
   }
@@ -90,9 +95,10 @@ function nextSong() {
 
 function previousSong() {
   if (youtubePlayer.value) {
-    musicState.youtubeVideoId = "previousVideoId"; // Cập nhật ID video
+    musicState.youtubeVideoId = "previousVideoId"; // Cập nhật ID video thực tế
     youtubePlayer.value.loadVideoById(musicState.youtubeVideoId);
     isPlaying.value = true;
+    sendMessage("previous", { videoId: musicState.youtubeVideoId });
   } else {
     console.warn("Player chưa được khởi tạo!");
   }
@@ -116,7 +122,49 @@ function initializePlayer() {
   });
 }
 
-onMounted(() => {
+function connectWebSocket() {
+  socket = new WebSocket("ws://localhost:8000/ws/heartbeats/422134/");
+
+  socket.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    const { action, payload } = data;
+
+    switch (action) {
+      case "play":
+        youtubePlayer.value?.playVideo();
+        isPlaying.value = true;
+        break;
+      case "pause":
+        youtubePlayer.value?.pauseVideo();
+        isPlaying.value = false;
+        break;
+      case "next":
+      case "previous":
+        if (payload.videoId) {
+          musicState.youtubeVideoId = payload.videoId;
+          youtubePlayer.value?.loadVideoById(payload.videoId);
+          isPlaying.value = true;
+        }
+        break;
+      default:
+        console.warn("Hành động không được hỗ trợ:", action);
+    }
+  };
+
+  socket.onclose = () => {
+    console.warn("WebSocket đã đóng kết nối.");
+  };
+}
+
+function sendMessage(action, payload) {
+  if (socket && socket.readyState === WebSocket.OPEN) {
+    socket.send(JSON.stringify({ action, payload }));
+  } else {
+    console.warn("WebSocket chưa kết nối.");
+  }
+}
+
+(() => {
   if (typeof YT === "undefined" || typeof YT.Player === "undefined") {
     const tag = document.createElement("script");
     tag.src = "https://www.youtube.com/iframe_api";
@@ -126,6 +174,14 @@ onMounted(() => {
     window.onYouTubeIframeAPIReady = initializePlayer;
   } else {
     initializePlayer();
+  }
+
+  connectWebSocket();
+});
+
+onUnmounted(() => {
+  if (socket) {
+    socket.close();
   }
 });
 </script>
@@ -171,6 +227,15 @@ onMounted(() => {
           <div class="mt-4">
             <div ref="youtubePlayer" id="youtube-player" class="w-full h-40 rounded-lg"></div>
           </div>
+
+          <!-- <iframe loading="lazy" title="Xem phim Đông Chí Tập 1 Vietsub, Love Song in Winter (2024)" height="455"
+            width="100%" id="mainPlayer" src="https://cloudasiatv.xyz/embed/vt/Vde49Ulx" frameborder="0"
+            allowfullscreen="true">Browser not compatible.
+          </iframe> -->
+
+          <video class="jw-video jw-reset" tabindex="-1" disableremoteplayback="" webkit-playsinline="" playsinline=""
+            preload="auto"
+            src="https://storage.googleapis.com/mediastorage/1735618804489/of4g8v1r1ca/156375862.mp4#mp4/156375862/360p"></video>
 
           <!-- Thanh điều khiển -->
           <div class="flex items-center justify-between mt-4">
@@ -227,142 +292,3 @@ onMounted(() => {
     </div>
   </div>
 </template>
-
-<!-- <script>
-import { onMounted, ref } from "vue";
-
-export default {
-  data() {
-    return {
-      isPlaylistHovered: false,
-      isSearchHovered: false,
-      numbers: [
-        {
-          avatar: "src/assets/image/avatar_A.jpg",
-          username: "User A",
-          userStatus: 'Listning'
-        },
-        {
-          avatar: "src/assets/image/boy.jpg",
-          username: "User B",
-          userStatus: 'Listning'
-        },
-      ],
-
-      songTitle: "Song Title",
-      artistName: "Artist Name",
-      youtubeVideoId: "dQw4w9WgXcQ",
-      isPlaying: false,
-    };
-  },
-  methods: {
-    handleMusicListMouseEnter() {
-      this.isPlaylistHovered = true;
-    },
-    handleMusicListMouseLeave() {
-      this.isPlaylistHovered = false;
-    },
-    handleMusicSearchMouseEnter() {
-      this.isSearchHovered = true;
-    },
-    handleMusicSearchMouseLeave() {
-      this.isSearchHovered = false;
-    },
-    musicPlayerClass() {
-      const isHovered = this.isPlaylistHovered || this.isSearchHovered;
-      return {
-        'md:col-span-2': isHovered,
-        'md:col-span-3': !isHovered,
-        'transform scale-100 transition-transform duration-300': true,
-      };
-    },
-    musicListClass() {
-      return {
-        'md:col-span-2': this.isPlaylistHovered,
-        'transform scale-100 transition-transform duration-300': true,
-      };
-    },
-    musicSearchClass() {
-      return {
-        'md:col-span-2': this.isSearchHovered,
-        'transform scale-100 transition-transform duration-300': true,
-      };
-    },
-    togglePlayPause() {
-      if (this.player) {
-        if (this.isPlaying) {
-          this.player.pauseVideo();
-        } else {
-          this.player.playVideo();
-        }
-        this.isPlaying = !this.isPlaying;
-      } else {
-        console.warn("Player chưa được khởi tạo!");
-      }
-    },
-    nextSong() {
-      if (this.player) {
-        this.youtubeVideoId = "nextVideoId"; // Cập nhật ID video
-        this.player.loadVideoById(this.youtubeVideoId);
-        this.isPlaying = true;
-      } else {
-        console.warn("Player chưa được khởi tạo!");
-      }
-    },
-    previousSong() {
-      if (this.player) {
-        this.youtubeVideoId = "previousVideoId"; // Cập nhật ID video
-        this.player.loadVideoById(this.youtubeVideoId);
-        this.isPlaying = true;
-      } else {
-        console.warn("Player chưa được khởi tạo!");
-      }
-    },
-
-    loadVideo() {
-      if (this.player) {
-        this.player.loadVideoById(this.youtubeVideoId);
-      }
-    },
-  },
-  mounted() {
-    if (this.$refs.youtubePlayer) {
-    this.initializePlayer();
-  } else {
-    console.error("YouTube Player ref is undefined!");
-  }
-    if (typeof YT === "undefined" || typeof YT.Player === "undefined") {
-      // Nếu API chưa được tải, theo dõi sự kiện tải
-      const tag = document.createElement("script");
-      tag.src = "https://www.youtube.com/iframe_api";
-      const firstScriptTag = document.getElementsByTagName("script")[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-      // Khởi tạo sau khi API sẵn sàng
-      window.onYouTubeIframeAPIReady = this.initializePlayer;
-    } else {
-      // Nếu API đã tải, khởi tạo ngay lập tức
-      this.initializePlayer();
-    }
-  },
-  methods: {
-    initializePlayer() {
-      this.player = new YT.Player("youtube-player", {
-        height: "100%",
-        width: "100%",
-        videoId: this.youtubeVideoId,
-        events: {
-          onReady: (event) => {
-            console.log("Player ready", event);
-          },
-          onStateChange: (event) => {
-            if (event.data === YT.PlayerState.ENDED) {
-              this.nextSong();
-            }
-          },
-        },
-      });
-    },
-  }
-};
-</script> -->

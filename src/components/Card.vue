@@ -1,66 +1,96 @@
 <template>
-  <div class="flex flex-col gap-5 group mx-2 cursor-pointer">
-    <div :class="['w-44 sm:w-52 aspect-square items-center justify-center flex shadow-lg', classFather]">
-      <img :src="image"
-        :class="['group-hover:ease-in-out transition duration-700 rounded-full group-hover:duration-1000 cursor-pointer object-center object-cover group-hover:scale-110 sm:group-hover:scale-150 w-16 sm:w-28 aspect-square rotate-0 group-hover:-rotate-[350deg] group-hover:stroke-lime-600 fill-lime-600 group-hover:-translate-y-12 group-hover:-skew-y-12 group-hover:skew-x-12', classchild]" />
-    </div>
+  <div
+    class="parent-menu group cursor-pointer relative overflow-hidden bg-gradient-to-b from-gray-800 to-gray-900 rounded-2xl p-6 shadow-xl border-2 border-transparent transition-transform duration-500 ease-in-out hover:scale-105 hover:border-indigo-500 hover:shadow-indigo-500/20 flex flex-col justify-center items-center">
+    <!-- Nội dung trước khi hover -->
+    <div
+      class="content-initial transition-all duration-500 ease-in-out flex flex-col items-center justify-center group-hover:scale-75 group-hover:translate-y-[-30%]">
+      <!-- Logo -->
+      <div
+        class="w-12 h-12 bg-indigo-500/20 rounded-lg border-2 border-indigo-500/40 group-hover:border-indigo-400 group-hover:bg-indigo-500/30 transition-all duration-500 ease-in-out flex items-center justify-center">
+        <svg v-if="icon === 'music'" xmlns="http://www.w3.org/2000/svg"
+          class="h-8 w-8 text-indigo-400 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 19V6l12-2v13M9 10l12-2m-12 5v6m-6-6h6m-6 6h6" />
+        </svg>
+        <svg v-if="icon === 'movie'" xmlns="http://www.w3.org/2000/svg"
+          class="h-8 w-8 text-indigo-400 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+          stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M4 17V7m0 10l3-3m5 3l3-3m-8 0h3m5 3V7m0 10l3-3m-8 0h3M4 7h16" />
+        </svg>
+      </div>
 
-    <div class="flex flex-row items-center justify-center">
-      <div class="flex flex-row items-center justify-center flex-col cursor-pointer">
-        <router-link style="display: contents;" :to="to" >
-          <svg clip-rule="evenodd"  fill-rule="evenodd" stroke-linejoin="round" stroke-miterlimit="2" viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-            class="text-gray-600 font-semibold group  from-gray-800 text-white font-semibold hover:rounded-[50%] transition-all duration-500 hover:from-[#331029] hover:to-[#310413] text-lg sm:text-xl transition-all duration-300 group-hover:transition-all group-hover:duration-300 group-hover:text-gray-200 fill-pink-600 group-hover:bg-pink-600 group-hover:fill-white group-hover:rotate-45 p-px rounded-full w-10 group-hover:rounded-full group-hover:animate-pulse">
-            <path
-              d="m12.012 1.995c-5.518 0-9.998 4.48-9.998 9.998s4.48 9.998 9.998 9.998 9.997-4.48 9.997-9.998-4.479-9.998-9.997-9.998zm0 1.5c4.69 0 8.497 3.808 8.497 8.498s-3.807 8.498-8.497 8.498-8.498-3.808-8.498-8.498 3.808-8.498 8.498-8.498zm1.528 4.715s1.502 1.505 3.255 3.259c.146.147.219.339.219.531s-.073.383-.219.53c-1.753 1.754-3.254 3.258-3.254 3.258-.145.145-.336.217-.527.217-.191-.001-.383-.074-.53-.221-.293-.293-.295-.766-.004-1.057l1.978-1.977h-6.694c-.414 0-.75-.336-.75-.75s.336-.75.75-.75h6.694l-1.979-1.979c-.289-.289-.286-.762.006-1.054.147-.147.339-.221.531-.222.19 0 .38.071.524.215z"
-              fill-rule="nonzero"></path>
-          </svg>
-          <span
-            class="opacity-0 text-white font-semibold group-hover:opacity-100 group-hover:text-gray-700 group-hover:text-sm group-hover:-translate-y-15 duration-700">
-            {{ title }}
-          </span>
-        </router-link>
+      <!-- Tiêu đề -->
+      <div class="text-center mt-4">
+        <p class="font-medium group-hover:text-indigo-400 transition-colors duration-500 ease-in-out">
+          {{ title }}
+        </p>
+        <p
+          class="text-xs mt-1 opacity-60 group-hover:opacity-100 group-hover:text-indigo-200 transition-opacity duration-500 ease-in-out">
+          {{ roomType }}
+        </p>
       </div>
     </div>
-  </div>
 
+    <!-- Nút hiển thị khi hover -->
+    <div
+      class="content-hover opacity-0 group-hover:opacity-100 translate-y-[100%] group-hover:translate-y-0 transition-all duration-500 ease-in-out flex flex-col items-center gap-3 absolute bottom-4 left-1/2 transform -translate-x-1/2">
+      <!-- Nút Tạo Mới Phòng -->
+      <button
+        class="w-40 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-md py-2 shadow-md cursor-pointer transition-all duration-500 ease-in-out">
+        Create Room
+      </button>
+
+      <!-- Nút Tìm Phòng -->
+      <button
+        class="w-40 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-md py-2 shadow-md cursor-pointer transition-all duration-500 ease-in-out">
+        Search Room
+      </button>
+    </div>
+  </div>
 </template>
 
 <script setup>
 defineProps({
-  image: {
-    type: String,
-    required: true,
-  },
-  to: {
-    type: String,
-    required: true,
-  },
   title: {
     type: String,
     required: true,
   },
-  classFather: {
-    type: String,
-    required: false,
-  },
-  classchild: {
+  roomType: {
     type: String,
     required: true,
   },
   icon: {
     type: String,
-    required: false, // Không bắt buộc
+    required: true,
   },
 });
 </script>
 
-<script>
-export default {
-  name: "Card",
-};
-</script>
-
 <style scoped>
-/* Thêm style nếu cần */
+.parent-menu {
+  width: 10rem;
+  height: 15rem;
+  position: relative;
+}
+
+.content-initial {
+  z-index: 10;
+  transform: translateY(0) scale(1);
+}
+
+.group-hover .content-initial {
+  transform: translateY(-30%) scale(0.75);
+}
+
+.content-hover {
+  z-index: 5;
+  opacity: 0; 
+  transform: translateY(100%);
+}
+
+.group-hover .content-hover {
+  opacity: 1;
+  transform: translateY(0);
+}
 </style>

@@ -44,15 +44,16 @@ export default {
     methods: {
         async handleLogin() {
             try {
-                const response = await axiosPrivateInstance.post("/login", {
+                const response = await axiosInstance.post("/login", {
                     email: this.email,
                     password: this.password,
                 });
-                console.log("Đăng nhập thành công:", response.data);
-                alert("Đăng nhập thành công!");
+                if (response.status === 200) {
+                    alert("Đăng nhập thành công!"); 
+                    this.$router.push("/");  
+                }
             } catch (error) {
-                console.error("Lỗi đăng nhập:", error.response?.data || error.message);
-                alert("Đăng nhập không thành công. Vui lòng thử lại!");
+                alert("Đăng nhập thất bại!");
             }
         },
     },

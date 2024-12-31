@@ -1,46 +1,46 @@
 <script setup>
+import { onMounted } from "vue";
+import { handler } from "flowbite/plugin";
 import Card from "./Card.vue";
+import { axiosPrivateInstance, axiosInstance } from "@/services/authAxios";
+
+const handlerData = async () => {
+  const response = await axiosPrivateInstance.get("/protected");
+  if (response.status === 200) {
+    console.log(response.data);
+  }
+
+};
+
+onMounted(handlerData);
 </script>
 <template>
   <div class="mt-8 flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-8">
-    <Card
-      v-for="(card, index) in cards"
-      :key="index"
-      :title="card.title"
-      :classFather="card.classFather"
-      :image="card.image"
-      :classchild="card.classchild"
-      :to = "card.url"
-    />
+    <Card v-for="(card, index) in cards" :key="index" :title="card.title" :icon="card.icon" :roomType="card.roomType" />
   </div>
 </template>
 
 <script>
 export default {
   name: "ContentGrid",
-
   data() {
     return {
-      numbers: [
+      cards: [
         {
-          title:"Room music",
-          classFather: "bg-white rounded-lg",
-          image: 'src/assets/image/icon_music.jpg',
-          classchild: 'rounded-full',
-          url:'/roommusic'
+          title: 'Music room',
+          icon: 'music',
+          roomType: 'music',
         },
         {
-          title: 'List music',
-          classFather: "bg-white rounded-lg",
-          image: 'src/assets/image/icon_list_music.jpg',
-          classchild: 'rounded-lg',
-          url: "/listmusic"
+          title: 'Movie room',
+          icon: 'movie',
+          roomType: 'movie',
         },
-        // Thêm nhiều đối tượng nữa nếu cần
       ],
     };
-  },
+  }
 };
+
 </script>
 
 <style scoped>
