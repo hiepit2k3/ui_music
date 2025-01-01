@@ -15,7 +15,7 @@
         <!-- Decoration 4: Nốt nhạc khác -->
         <div
             class="absolute bottom-10 left-1/4 w-10 h-10 bg-pink-400 flex items-center justify-center rounded-full opacity-60 animate-pulse">
-            🎶
+                
         </div>
 
         <!-- Decoration 5: Hoa tròn nhỏ -->

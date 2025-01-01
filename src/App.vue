@@ -31,8 +31,6 @@ import HeaderComponent from "./components/HeaderComponent.vue";
 import LoginRegisterForm from "./components/LoginRegisterForm.vue";
 import AvatarComponent from "./components/AvatarComponent.vue";
 import RoomCodeComponent from "./components/RoomCodeComponent.vue";
-import ProfileComponent from "./components/ProfileComponent.vue";
-import SlideComponent from "./components/SlideComponent.vue";
 import BackgroundDecorations from "./components/BackgroundDecorations.vue";
 import HeroSection from "./components/HeroSection.vue";
 
@@ -42,8 +40,6 @@ export default {
         LoginRegisterForm,
         AvatarComponent,
         RoomCodeComponent,
-        ProfileComponent,
-        SlideComponent,
         HeroSection,
         BackgroundDecorations,
     },
