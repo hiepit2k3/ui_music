@@ -37,12 +37,17 @@
         <p class="text-lg text-gray-600 mb-6">Enter Details to Create Room...</p>
         <div class="mb-6">
           <div class="relative mb-4">
-            <input type="text" placeholder="Room Name"
+            <input type="text" placeholder="Room Name" v-model="roomName"
               class="w-full bg-gradient-to-br from-gray-200 to-gray-300 text-center text-gray-700 py-2 px-4 rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-gray-500" />
             <i class="fas fa-door-open absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
           </div>
-          <div class="relative">
-            <input :type="isPasswordVisible ? 'text' : 'password'" placeholder="Room Password"
+          <div class="flex items-center justify-between mb-4">
+            <label class="text-gray-700 text-lg font-medium" for="usePassword">Use Password</label>
+            <input id="usePassword" type="checkbox" v-model="usePassword"
+              class="w-5 h-5 text-blue-500 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+          <div v-if="usePassword" class="relative">
+            <input :type="isPasswordVisible ? 'text' : 'password'" placeholder="Room Password" v-model="password"
               class="w-full bg-gradient-to-br from-gray-200 to-gray-300 text-center text-gray-700 py-2 px-4 rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-gray-500 pr-10" />
             <span @click="togglePasswordVisibility">
               <i :class="isPasswordVisible ? 'fas fa-eye-slash' : 'fas fa-eye'"
@@ -51,12 +56,13 @@
             <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
           </div>
         </div>
+
         <div class="flex justify-center p-2 gap-6">
           <div>
             <input class="sr-only" v-model="groupType" value="COUPLE" name="groupType" id="COUPLE" type="radio" />
             <div
-              class="flex h-20 w-36 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-gray-300 bg-gray-50 p-2 transition-transform duration-150 hover:border-blue-400 active:scale-95"
-              :class="{ 'border-blue-500 shadow-md shadow-blue-400': groupType === 'COUPLE' }"
+              class="flex h-20 w-36 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-gray-300 bg-gray-50 p-2 transition-transform duration-150 hover:border-blue-400 active:scale-95 active:bg-blue-50"
+              :class="{ 'border-blue-500 shadow-md shadow-blue-600': groupType === 'COUPLE' }"
               @click="groupType = 'COUPLE'">
               <label class="flex cursor-pointer items-center justify-center text-sm uppercase text-gray-500"
                 :class="{ 'text-blue-500': groupType === 'COUPLE' }" for="COUPLE">
@@ -69,7 +75,7 @@
             <input class="sr-only" v-model="groupType" value="EVERYONE" name="groupType" id="EVERYONE" type="radio" />
             <div
               class="flex h-20 w-36 cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-gray-300 bg-gray-50 p-2 transition-transform duration-150 hover:border-blue-400 active:scale-95"
-              :class="{ 'border-blue-500 shadow-md shadow-blue-400': groupType === 'EVERYONE' }"
+              :class="{ 'border-blue-500 shadow-md shadow-blue-600': groupType === 'EVERYONE' }"
               @click="groupType = 'EVERYONE'">
               <label class="flex cursor-pointer items-center justify-center text-sm uppercase text-gray-500"
                 :class="{ 'text-blue-500': groupType === 'EVERYONE' }" for="EVERYONE">
@@ -80,13 +86,13 @@
           </div>
         </div>
         <div v-if="groupType === 'EVERYONE'" class="relative mt-4">
-          <input type="number" placeholder="Number of Members"
+          <input type="number" placeholder="Number of Members" v-model="numberOfMembers"
             class="w-full bg-gradient-to-br from-gray-200 to-gray-300 text-center text-gray-700 py-2 px-4 rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-gray-500" />
           <i class="fas fa-users absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
         </div>
         <div class="button-container mt-6">
-          <button @click="toggleCreateForm"
-            class="w-full bg-pink-400 text-white py-2 px-4 rounded-full shadow hover:bg-pink-600 focus:outline-none focus:ring-2 focus:ring-green-500 transition flex items-center justify-center">
+          <button @click="submitDataCreateRoom"
+            class="w-full bg-pink-400 text-white py-2 px-4 rounded-full shadow hover:bg-pink-600 focus:outline-none focus:ring-2 transition flex items-center justify-center">
             <i class="fas fa-check text-white text-lg mr-2"></i>
             <span>Create</span>
           </button>
@@ -121,6 +127,9 @@
 </template>
 
 <script>
+import { handler } from 'flowbite/plugin';
+import { axiosInstance, axiosPrivateInstance } from "@/services/authAxios";
+
 export default {
   name: "RoomInput",
   props: ["title", "description", "image", "roomClass"],
@@ -128,8 +137,12 @@ export default {
     return {
       showSearchForm: false,
       showCreateForm: false,
-      groupType: '',
+      groupType: null,
       isPasswordVisible: false,
+      usePassword: false,
+      numberOfMembers: 0,
+      password: null,
+      roomName: null,
     };
   },
   methods: {
@@ -142,6 +155,33 @@ export default {
     },
     togglePasswordVisibility() {
       this.isPasswordVisible = !this.isPasswordVisible; // Đảo trạng thái hiển thị mật khẩu
+    },
+    resetForm() {
+      this.roomName = '';
+      this.password = '';
+      this.groupType = '';
+      this.numberOfMembers = 0;
+      this.usePassword = false;
+      this.isPasswordVisible = false;
+    },
+    async submitDataCreateRoom() {
+      console.log(this.groupType);
+      try {
+        const response = await axiosPrivateInstance.post("/room/createroom", {
+          roomName: this.roomName,
+          password: this.password,
+          groupType: this.groupType,
+          numberOfMembers: this.numberOfMembers,
+          roomType: this.title,
+        });
+        if (response.status === 200) {
+          alert("Tạo phòng thành công!");
+          this.resetForm();
+          this.toggleCreateForm();  
+        }
+      } catch (error) {
+        alert("Tạo phòng thất bại!");
+      }
     },
   },
 };
