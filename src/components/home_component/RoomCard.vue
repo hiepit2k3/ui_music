@@ -42,8 +42,12 @@
             <i class="fas fa-door-open absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
           </div>
           <div class="relative">
-            <input type="password" placeholder="Room Password"
-              class="w-full bg-gradient-to-br from-gray-200 to-gray-300 text-center text-gray-700 py-2 px-4 rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-gray-500" />
+            <input :type="isPasswordVisible ? 'text' : 'password'" placeholder="Room Password"
+              class="w-full bg-gradient-to-br from-gray-200 to-gray-300 text-center text-gray-700 py-2 px-4 rounded-lg shadow-inner focus:outline-none focus:ring-2 focus:ring-gray-500 pr-10" />
+            <span @click="togglePasswordVisibility">
+              <i :class="isPasswordVisible ? 'fas fa-eye-slash' : 'fas fa-eye'"
+                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 cursor-pointer"></i>
+            </span>
             <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"></i>
           </div>
         </div>
@@ -125,6 +129,7 @@ export default {
       showSearchForm: false,
       showCreateForm: false,
       groupType: '',
+      isPasswordVisible: false,
     };
   },
   methods: {
@@ -134,6 +139,9 @@ export default {
     toggleCreateForm() {
       this.showCreateForm = !this.showCreateForm;
       this.groupType = ''; // Reset the selection when the form is closed
+    },
+    togglePasswordVisibility() {
+      this.isPasswordVisible = !this.isPasswordVisible; // Đảo trạng thái hiển thị mật khẩu
     },
   },
 };
