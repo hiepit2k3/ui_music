@@ -10,10 +10,13 @@
       <router-link to="/" class="text-pink-600 font-semibold no-underline hover:underline">Pricing</router-link>
     </div>
 
-    <div class="flex space-x-4">
-      <button
-        class="text-pink-600 px-6 py-3 transition rounded-lg font-medium no-underline hover:underline hover:bg-white">Login</button>
-      <button
+    
+
+    <div class="flex space-x-4" >
+      <AvatarDropdown />
+      <button v-if="isAuthenticated"
+        class="text-pink-600 px-6 py-3 transition rounded-lg font-medium no-underline hover:underline hover:bg-white ">Login</button>
+      <button v-if="isAuthenticated"
         class="bg-pink-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-pink-500 transition no-underline hover:underline">Register</button>
     </div>
 
@@ -85,7 +88,19 @@
   </div>
 </template>
 <script>
+import { computed } from "vue";
+import { useStore } from "vuex";
+import AvatarDropdown from "./hearder_componen/AvatarDropdown.vue";
+
 export default {
+  components: {
+    AvatarDropdown
+  },
+  setup() {
+    const store = useStore();
+    const isAuthenticated = computed(() => store.getters.isAuthenticated);
+    return { isAuthenticated };
+  },
   name: "HeaderComponent",
   data() {
     return {
@@ -97,6 +112,7 @@ export default {
       this.isMenuOpen = !this.isMenuOpen;
     },
   },
+
 };
 </script>
 

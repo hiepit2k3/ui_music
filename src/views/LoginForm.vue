@@ -31,31 +31,29 @@
 </template>
 
 <script>
-import { axiosInstance, axiosPrivateInstance } from "@/services/authAxios";
+import { mapActions } from 'vuex';
 
 export default {
-    name: "LoginForm",
-    data() {
-        return {
-            email: "",
-            password: "",
-        };
+  name: "LoginForm",
+  data() {
+    return {
+      email: "",
+      password: "",
+    };
+  },
+  methods: {
+    async handleLogin() {
+      try {
+        await this.$store.dispatch('login', { email: this.email, password: this.password });
+        alert("Đăng nhập thành công!");
+        this.$router.push("/");  // Chuyển hướng về trang chủ
+      } catch (error) {
+        alert("Đăng nhập thất bại!");
+      }
     },
-    methods: {
-        async handleLogin() {
-            try {
-                const response = await axiosInstance.post("/login", {
-                    email: this.email,
-                    password: this.password,
-                });
-                if (response.status === 200) {
-                    alert("Đăng nhập thành công!"); 
-                    this.$router.push("/");  
-                }
-            } catch (error) {
-                alert("Đăng nhập thất bại!");
-            }
-        },
-    },
+  },
+  computed: {
+    ...mapActions(['login']),  // Kết nối action login từ Vuex
+  },
 };
 </script>
