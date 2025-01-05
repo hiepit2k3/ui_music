@@ -3,14 +3,16 @@ import { axiosInstance, axiosPrivateInstance } from "@/services/authAxios";
 
 export default createStore({
   state: {
+    isAuthenticated: false,
     permission: null,
   },
   mutations: {
-    setPermission(state, permission) {
-      state.permission = permission;
+    setAuthenticated(state, payload) {
+      state.isAuthenticated = payload.isAuthenticated;
+      state.permission = payload.permission || null;
     },
-    // Mutation để đăng xuất, làm trống quyền
     logout(state) {
+      state.isAuthenticated = false;
       state.permission = null;
     },
   },
@@ -19,10 +21,11 @@ export default createStore({
       try {
         const response = await axiosPrivateInstance.post("login", credentials);
 
-        console.log(response);
-
         if (response.status === 200) {
-            commit('setPermission', response.data.data.permission);
+          commit("setAuthenticated", {
+            isAuthenticated: true,
+            permission: response.data.data.permission,
+          });
         } else {
           throw new Error("Đăng nhập thất bại");
         }
@@ -30,13 +33,53 @@ export default createStore({
         console.error(error);
       }
     },
-    logout({ commit }) {
-      commit("logout");
+    async checkAuth({ commit }) {
+      try {
+        const response = await axiosPrivateInstance.get("status");  // Gửi yêu cầu đến API /status
+
+        if (response.status === 200) {
+          // Nếu trạng thái là 200, cập nhật trạng thái xác thực trong Vuex
+          commit("setAuthenticated", {
+            isAuthenticated: true,
+            permission: response.data.data.permission,
+          });
+        } else {
+          // Nếu không phải 200, coi như không xác thực và cập nhật trạng thái
+          commit("setAuthenticated", { isAuthenticated: false });
+        }
+      } catch (error) {
+        // Kiểm tra lỗi và xử lý trường hợp lỗi 401
+        if (error.response && error.response.status === 401) {
+          console.error("Unauthorized: No access token provided");
+          commit("setAuthenticated", { isAuthenticated: false });
+        } else {
+          // Xử lý các lỗi khác
+          console.error("Error:", error);
+          commit("setAuthenticated", { isAuthenticated: false });
+        }
+      }
     },
+    async logout({ commit }) {
+      try {
+        const response = await axiosInstance.post("/logout");
+        if (response.status === 200) {
+          commit("logout");
+          console.log("Đăng xuất thành công");
+        } else {
+          throw new Error("Đăng xuất thất bại");
+        }
+      } catch (error) {
+        console.error("Lỗi khi đăng xuất:", error);
+      }
+    },
+
   },
   getters: {
     // Getter để kiểm tra quyền người dùng
     isUser: (state) => state.permission === 'USER',
-    isAuthenticated: (state) => !!state.permission // Kiểm tra người dùng đã đăng nhập
+    isAuthenticated: (state) => {
+      console.log("Getter isAuthenticated:", state.isAuthenticated);
+      return state.isAuthenticated;
+    }
   }
 });

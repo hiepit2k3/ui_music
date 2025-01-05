@@ -1,5 +1,5 @@
 <template>
-  <div class="top-0 left-0 w-full flex justify-between items-center p-4 z-50 bg-transparent">
+  <div class="top-0 left-0 w-full flex justify-between items-center p-4 bg-transparent">
     <!-- Logo -->
     <img src="../assets/image/logo.png" alt="">
 
@@ -10,13 +10,14 @@
       <router-link to="/" class="text-pink-600 font-semibold no-underline hover:underline">Pricing</router-link>
     </div>
 
-    
-
-    <div class="flex space-x-4" >
+    <div class="flex space-x-4" v-if="isAuthenticated">
       <AvatarDropdown />
-      <button v-if="isAuthenticated"
+    </div>
+
+    <div class="flex space-x-4" v-else>
+      <button 
         class="text-pink-600 px-6 py-3 transition rounded-lg font-medium no-underline hover:underline hover:bg-white ">Login</button>
-      <button v-if="isAuthenticated"
+      <button 
         class="bg-pink-600 text-white px-6 py-3 rounded-lg font-medium hover:bg-pink-500 transition no-underline hover:underline">Register</button>
     </div>
 
@@ -99,6 +100,7 @@ export default {
   setup() {
     const store = useStore();
     const isAuthenticated = computed(() => store.getters.isAuthenticated);
+    console.log(isAuthenticated);
     return { isAuthenticated };
   },
   name: "HeaderComponent",
@@ -110,6 +112,7 @@ export default {
   methods: {
     toggleMenu() {
       this.isMenuOpen = !this.isMenuOpen;
+      console.log(this.isAuthenticated);
     },
   },
 

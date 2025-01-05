@@ -24,7 +24,7 @@ axiosPrivateInstance.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (error.response?.status === 401 && !originalRequest._retry && error.response?.data?.isRefreshToken === true) {
       originalRequest._retry = true;
       try {
         await axiosInstance.post("refresh");
@@ -35,5 +35,7 @@ axiosPrivateInstance.interceptors.response.use(
         }
       }
     }
+    return Promise.reject(error);
   }
 );
+  

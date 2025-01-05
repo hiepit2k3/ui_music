@@ -2,11 +2,17 @@
 import Playlist from '@/components/Playlist.vue';
 import CardNumberRoom from '@/components/CardNumberRoom.vue';
 import { ref, reactive, onMounted, onUnmounted } from "vue";
+import socketService from "@/services/socketService";
+import { axiosPrivateInstance } from "@/services/authAxios";
 
-const isPlaylistHovered = ref(false);
-const isSearchHovered = ref(false);
 const isPlaying = ref(false);
-const youtubePlayer = ref(null);
+const searcher = ref("");
+const searchResults = ref([]);
+const currentTime = ref(0);  // Thời gian hiện tại của video
+const duration = ref(0); // Tổng thời gian của video
+
+let player;
+
 
 const musicState = reactive({
   songTitle: "Song Title",
@@ -28,256 +34,176 @@ const musicState = reactive({
 
 let socket = null;
 
-function handleMusicListMouseEnter() {
-  isPlaylistHovered.value = true;
+const searchMusic = async () => {
+  try {
+    const response = await axiosPrivateInstance.post("music/search", {
+      query: searcher.value,
+    });
+    searchResults.value = response.data.data;
+  } catch (error) {
+    console.error(error);
+  }
 }
 
-function handleMusicListMouseLeave() {
-  isPlaylistHovered.value = false;
-}
+onMounted(() => {
+  socketService.connect("http://localhost:3000");
 
-function handleMusicSearchMouseEnter() {
-  isSearchHovered.value = true;
-}
-
-function handleMusicSearchMouseLeave() {
-  isSearchHovered.value = false;
-}
-
-function musicPlayerClass() {
-  const isHovered = isPlaylistHovered.value || isSearchHovered.value;
-  return {
-    'md:col-span-2': isHovered,
-    'md:col-span-3': !isHovered,
-    'transform scale-100 transition-transform duration-300': true,
-  };
-}
-
-function musicListClass() {
-  return {
-    'md:col-span-2': isPlaylistHovered.value,
-    'transform scale-100 transition-transform duration-300': true,
-  };
-}
-
-function musicSearchClass() {
-  return {
-    'md:col-span-2': isSearchHovered.value,
-    'transform scale-100 transition-transform duration-300': true,
-  };
-}
-
-function togglePlayPause() {
-  if (youtubePlayer.value) {
-    if (isPlaying.value) {
-      youtubePlayer.value.pauseVideo();
-      sendMessage("pause", {});
-    } else {
-      youtubePlayer.value.playVideo();
-      sendMessage("play", {});
+  socketService.socket.on("receiveMessage", (message) => {
+    if (message.action === "play") {
+      player.playVideo();
+    } else if (message.action === "pause") {
+      player.pauseVideo();
+    } else if (message.action === "seek") {
+      player.seekTo(message.currentTime);
     }
-    isPlaying.value = !isPlaying.value;
-  } else {
-    console.warn("Player chưa được khởi tạo!");
-  }
-}
-
-function nextSong() {
-  if (youtubePlayer.value) {
-    musicState.youtubeVideoId = "nextVideoId"; // Cập nhật ID video thực tế
-    youtubePlayer.value.loadVideoById(musicState.youtubeVideoId);
-    isPlaying.value = true;
-    sendMessage("next", { videoId: musicState.youtubeVideoId });
-  } else {
-    console.warn("Player chưa được khởi tạo!");
-  }
-}
-
-function previousSong() {
-  if (youtubePlayer.value) {
-    musicState.youtubeVideoId = "previousVideoId"; // Cập nhật ID video thực tế
-    youtubePlayer.value.loadVideoById(musicState.youtubeVideoId);
-    isPlaying.value = true;
-    sendMessage("previous", { videoId: musicState.youtubeVideoId });
-  } else {
-    console.warn("Player chưa được khởi tạo!");
-  }
-}
-
-function initializePlayer() {
-  youtubePlayer.value = new YT.Player("youtube-player", {
-    height: "100%",
-    width: "100%",
-    videoId: musicState.youtubeVideoId,
-    events: {
-      onReady: (event) => {
-        console.log("Player ready", event);
-      },
-      onStateChange: (event) => {
-        if (event.data === YT.PlayerState.ENDED) {
-          nextSong();
-        }
-      },
-    },
   });
-}
 
-function connectWebSocket() {
-  socket = new WebSocket("ws://localhost:8000/ws/heartbeats/422134/");
+  // Tải và khởi tạo YouTube Iframe Player API
+  const tag = document.createElement('script');
+  tag.src = "https://www.youtube.com/iframe_api";
+  document.body.appendChild(tag);
 
-  socket.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    const { action, payload } = data;
-
-    switch (action) {
-      case "play":
-        youtubePlayer.value?.playVideo();
-        isPlaying.value = true;
-        break;
-      case "pause":
-        youtubePlayer.value?.pauseVideo();
-        isPlaying.value = false;
-        break;
-      case "next":
-      case "previous":
-        if (payload.videoId) {
-          musicState.youtubeVideoId = payload.videoId;
-          youtubePlayer.value?.loadVideoById(payload.videoId);
-          isPlaying.value = true;
-        }
-        break;
-      default:
-        console.warn("Hành động không được hỗ trợ:", action);
-    }
+  window.onYouTubeIframeAPIReady = () => {
+    player = new YT.Player("player", {
+      videoId: "stvWuowo1dU",  // ID video YouTube
+      events: {
+        onReady: onPlayerReady,
+        onStateChange: onPlayerStateChange,
+      },
+    });
   };
-
-  socket.onclose = () => {
-    console.warn("WebSocket đã đóng kết nối.");
-  };
-}
-
-function sendMessage(action, payload) {
-  if (socket && socket.readyState === WebSocket.OPEN) {
-    socket.send(JSON.stringify({ action, payload }));
-  } else {
-    console.warn("WebSocket chưa kết nối.");
-  }
-}
-
-(() => {
-  if (typeof YT === "undefined" || typeof YT.Player === "undefined") {
-    const tag = document.createElement("script");
-    tag.src = "https://www.youtube.com/iframe_api";
-    const firstScriptTag = document.getElementsByTagName("script")[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-    window.onYouTubeIframeAPIReady = initializePlayer;
-  } else {
-    initializePlayer();
-  }
-
-  connectWebSocket();
 });
+// Khi player đã sẵn sàng
+const onPlayerReady = () => {
+  duration.value = player.getDuration(); // Lấy tổng thời gian video
+  updateProgressBar();
+};
 
-onUnmounted(() => {
-  if (socket) {
-    socket.close();
+// Kiểm tra trạng thái của player
+const onPlayerStateChange = (event) => {
+  if (event.data === YT.PlayerState.PLAYING) {
+    isPlaying.value = true;
+    updateProgressBar();
+  } else {
+    isPlaying.value = false;
   }
-});
+};
+
+// Cập nhật thanh tiến trình
+const updateProgressBar = () => {
+  if (isPlaying.value) {
+    setInterval(() => {
+      currentTime.value = player.getCurrentTime(); // Cập nhật thời gian hiện tại
+    }, 1000);  // Cập nhật mỗi giây
+  }
+};
+
+// frontend (Vue.js)
+const togglePlay = () => {
+  if (isPlaying.value) {
+    player.pauseVideo();
+    socketService.sendMessage("sendMessage", { action: "pause", roomId: "room1" });
+  } else {
+    player.playVideo();
+    socketService.sendMessage("sendMessage", { action: "play", roomId: "room1" });
+  }
+};
+
+
+// Thay đổi vị trí phát video khi kéo thanh tiến trình
+// frontend (Vue.js)
+const seekVideo = () => {
+  player.seekTo(currentTime.value);
+  socketService.sendMessage("sendMessage", { action: "seek", currentTime: currentTime.value, roomId: "room1" });
+};
+
+
+// Chuyển đổi thời gian (tính bằng giây) thành định dạng phút:giây
+const formatTime = (seconds) => {
+  const minutes = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${minutes}:${secs < 10 ? "0" : ""}${secs}`;
+};
 </script>
 
 <template>
-  <div class="min-h-screen flex justify-center items-center p-4 md:p-8">
-    <div class="bg-white p-6 rounded-xl shadow-xl w-full max-w-6xl">
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+  <div class="md:min-h-screen lg:min-h-screen xl:min-h-screen flex w-full justify-center items-center p-4 md:p-8">
+
+    <div class="bg-white p-6 rounded-xl shadow-xl w-full">
+      <div class="flex flex-wrap gap-4 w-full">
         <!-- Search Bar -->
-        <div @mouseover="handleMusicSearchMouseEnter" @mouseleave="handleMusicSearchMouseLeave"
-          :class="musicSearchClass()"
-          class="col-span-1 bg-gradient-to-b from-pink-200 via-pink-100 to-purple-100 p-4 rounded-lg shadow-md hover:scale-105">
+        <div
+          class="w-full md:w-[calc(50%-9px)] p-2 bg-gradient-to-b from-pink-200 via-pink-100 to-purple-100 rounded-lg shadow-md cursor-pointer">
           <div class="relative">
-            <input placeholder="Search..."
+            <input placeholder="Search..." v-model="searcher"
               class="input shadow-lg focus:border-2 border-gray-300 rounded-xl w-full transition-all focus:w-full outline-none p-2 pr-10"
               name="search" type="search" />
-            <svg class="absolute top-3 right-3 text-gray-500 w-5 h-5" stroke="currentColor" stroke-width="1.5"
-              viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg class="absolute top-3 right-3 text-gray-500 w-5 h-5" @click="searchMusic" stroke="currentColor"
+              stroke-width="1.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"
                 stroke-linejoin="round" stroke-linecap="round" />
             </svg>
           </div>
+
+          <!-- Kết quả tìm kiếm -->
+          <div v-if="searchResults.length > 0">
+            <div v-for="(result, index) in searchResults" :key="index"
+              class="mt-3 h-40 flex flex-col justify-center gap-2 bg-indigo-500 rounded-lg shadow p-2">
+              <div class="flex gap-2">
+                <img :src="result.thumbnail" alt="" class="bg-purple-200 w-24 h-24 shrink-0 rounded-lg" />
+                <div class="flex flex-col text-white">
+                  <span class="font-bold italic">{{ result.title }}</span>
+                  <p class="line-clamp-3">
+                  </p>
+                </div>
+              </div>
+              <button class="hover:bg-purple-300 bg-neutral-50 font-bold text-indigo-500 rounded p-2">
+                Download
+              </button>
+            </div>
+          </div>
         </div>
 
-        <!-- Main Music Player -->
-        <div :class="musicPlayerClass()"
-          class="col-span-1 bg-pink-200 p-3 rounded-lg shadow-md relative transition-transform duration-300 hover:scale-105"
-          id="music-player">
 
-          <!-- Ảnh nền -->
+        <!-- Playlist -->
+        <div
+          class="w-full md:w-[calc(50%-9px)] p-2 bg-gradient-to-b from-pink-200 via-pink-100 to-purple-100 rounded-lg shadow-md cursor-pointer">
+          <Playlist />
+        </div>
+      </div>
+
+
+      <!-- Main Music Player -->
+      <div class="mt-6 bg-gradient-to-b from-pink-200 via-pink-100 to-purple-100 rounded-lg shadow-md">
+        <div
+          class="p-3 bg-gradient-to-b from-pink-200 via-pink-100 to-purple-100 rounded-lg shadow-md relative transition-transform duration-300 cursor-pointer">
           <div class="rounded-lg overflow-hidden">
             <img src="../assets/image/background_music.jpg" alt="Album art"
               class="w-full h-40 object-cover rounded-lg transition-transform duration-300 hover:scale-110" />
           </div>
 
-          <!-- Tên bài hát & Nghệ sĩ -->
           <div class="mt-4 text-center">
             <h2 class="text-lg font-semibold text-gray-700">{{ musicState.songTitle }}</h2>
             <p class="text-sm text-gray-500">{{ musicState.artistName }}</p>
           </div>
 
-          <!-- Trình phát YouTube -->
-          <div class="mt-4">
-            <div ref="youtubePlayer" id="youtube-player" class="w-full h-40 rounded-lg"></div>
+          <div class="video-container relative h-64 hidden">
+            <div id="player"></div> <!-- Video YouTube sẽ được nhúng vào đây -->
           </div>
-
-          <!-- <iframe loading="lazy" title="Xem phim Đông Chí Tập 1 Vietsub, Love Song in Winter (2024)" height="455"
-            width="100%" id="mainPlayer" src="https://cloudasiatv.xyz/embed/vt/Vde49Ulx" frameborder="0"
-            allowfullscreen="true">Browser not compatible.
-          </iframe> -->
-
-          <video class="jw-video jw-reset" tabindex="-1" disableremoteplayback="" webkit-playsinline="" playsinline=""
-            preload="auto"
-            src="https://storage.googleapis.com/mediastorage/1735618804489/of4g8v1r1ca/156375862.mp4#mp4/156375862/360p"></video>
-
-          <!-- Thanh điều khiển -->
-          <div class="flex items-center justify-between mt-4">
-            <button @click="previousSong" class="text-gray-500 hover:text-pink-500">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                stroke="currentColor" class="w-6 h-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <button @click="togglePlayPause"
-              class="bg-pink-500 text-white p-3 rounded-full shadow-lg hover:bg-pink-600">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                stroke="currentColor" class="w-6 h-6">
-                <path v-if="!isPlaying" stroke-linecap="round" stroke-linejoin="round" d="M5 3v18l15-9L5 3z" />
-                <path v-else stroke-linecap="round" stroke-linejoin="round" d="M6 4h4v16H6zm8 0h4v16h-4z" />
-              </svg>
-            </button>
-            <button @click="nextSong" class="text-gray-500 hover:text-pink-500">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                stroke="currentColor" class="w-6 h-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-              </svg>
+          <div class="mt-4 text-center">
+            <button @click="togglePlay"
+              class="bg-pink-500 text-white font-bold px-4 py-2 rounded-full shadow-md hover:bg-indigo-600 transition">
+              {{ isPlaying ? 'Pause' : 'Play' }}
             </button>
           </div>
 
-          <!-- Thanh tiến trình -->
           <div class="mt-4">
-            <div class="h-2 bg-gray-200 rounded-full">
-              <div class="h-2 bg-pink-500 rounded-full w-1/2"></div>
+            <input type="range" v-model="currentTime" :max="duration" @input="seekVideo"
+              class="w-full h-2 bg-pink-500 rounded-lg cursor-pointer" />
+            <div class="flex justify-between text-sm text-gray-600 mt-2">
+              <span>{{ formatTime(currentTime) }}</span> / <span>{{ formatTime(duration) }}</span>
             </div>
           </div>
-          <div class="mt-2 flex justify-between text-sm text-gray-500">
-            <span>0:00</span>
-            <span>3:45</span>
-          </div>
-        </div>
-
-        <!-- Playlist -->
-        <div @mouseover="handleMusicListMouseEnter" @mouseleave="handleMusicListMouseLeave" :class="musicListClass()"
-          class="col-span-1 bg-gradient-to-b from-pink-200 via-pink-100 to-purple-100 p-4 rounded-lg shadow-md transition-transform duration-300 hover:scale-105"
-          id="playlist">
-          <Playlist />
         </div>
       </div>
 

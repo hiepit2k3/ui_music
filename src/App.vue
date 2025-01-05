@@ -1,17 +1,19 @@
 <template>
     <div class="min-h-screen w-full flex flex-col items-center relative">
         <div class="w-full md::min-h-screen md::bg-cover bg-center"
-            style="background-image: url(src/assets/image/background_main.jpg);">   
+            style="background-image: url('../src/assets/image/background_main.jpg');">
             <!-- Gradient chỉ ở phía dưới -->
             <div class="absolute bottom-0 left-0 w-full"></div>
 
             <!-- Header và HeroSection -->
             <HeaderComponent />
-            <div class="relative flex w-full justify-start z-10">
+            <div class="flex w-full justify-start">
                 <HeroSection />
             </div>
         </div>
-        <router-view></router-view>
+        <div class="d-flex justify-center md:min-h-screen lg:min-h-screen xl:min-h-screen xl:w-1/2">
+            <router-view></router-view>
+        </div>
 
         <BackgroundDecorations>
             <div class="relative z-10 text-center p-10">

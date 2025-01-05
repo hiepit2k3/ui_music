@@ -13,11 +13,11 @@
         <h1 class="text-2xl font-bold text-gray-700 mb-4">SEARCH {{ title }}</h1>
         <p class="text-lg text-gray-600 mb-6">Enter Room ID to Search...</p>
         <div class="mb-6">
-          <input type="text" placeholder="Enter Room ID"
+          <input type="text" placeholder="Enter Room ID" v-model="roomID"
             class="w-full bg-gradient-to-br from-gray-200 to-gray-300 text-center text-gray-700 py-2 px-4 rounded-full shadow-inner focus:outline-none focus:ring-2 focus:ring-gray-500" />
         </div>
         <div class="button-container">
-          <button @click="toggleSearchForm"
+          <button @click="submitDataSearchRoom"
             class="w-full bg-blue-500 text-white py-2 px-4 rounded-full shadow hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition flex items-center justify-center">
             <i class="fas fa-search text-white text-xl mr-2"></i>
             <span>Search</span>
@@ -157,9 +157,9 @@ export default {
       this.isPasswordVisible = !this.isPasswordVisible; // Đảo trạng thái hiển thị mật khẩu
     },
     resetForm() {
-      this.roomName = '';
-      this.password = '';
-      this.groupType = '';
+      this.roomName = null;
+      this.password = null;
+      this.groupType = null;
       this.numberOfMembers = 0;
       this.usePassword = false;
       this.isPasswordVisible = false;
@@ -175,12 +175,31 @@ export default {
           roomType: this.title,
         });
         if (response.status === 200) {
-          alert("Tạo phòng thành công!");
+          alert("Create room success!");
           this.resetForm();
           this.toggleCreateForm();  
         }
       } catch (error) {
-        alert("Tạo phòng thất bại!");
+        alert("Create room fail!");
+      }
+    },
+
+    async submitDataSearchRoom() {
+      try {
+        const response = await axiosPrivateInstance.post("/room/addNumberInRoom", {
+          roomID: this.roomID,
+        });
+        if (response.status === 200) {
+          alert("Join room success!");
+          this.resetForm();
+          console.log(response);  
+        }
+      } catch (error) {
+        console.log(JSON.parse(error.config.data).roomID);
+        if (error.response.status === 409) {
+          const roomID = JSON.parse(error.config.data).roomID;
+          this.$router.push('/roommusic/' + roomID);
+        }
       }
     },
   },

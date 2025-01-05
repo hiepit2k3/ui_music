@@ -11,8 +11,8 @@ import '@fortawesome/fontawesome-free/js/all.js';
 
 const app = createApp(App)
 
-app.use(router)
-
-app.use(store)
-
-app.mount('#app')
+store.dispatch("checkAuth").then(() => {
+    app.use(router);
+    app.use(store);
+    app.mount("#app");
+  });
