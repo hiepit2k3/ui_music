@@ -20,6 +20,16 @@ const connectToNamespace = (namespace) => {
     console.log(`[${namespace}] Message received:`, message);
   });
 
+  socket.on("userJoined", (data) => {
+    console.log(`User ${data.userId} joined room ${data.roomId}`);
+    // Cập nhật danh sách thành viên
+  });
+  
+  socket.on("userLeft", (data) => {
+    console.log(`User ${data.userId} left room ${data.roomId}`);
+    // Cập nhật danh sách thành viên
+  });
+
   socket.on("disconnect", () => {
     console.log(`Disconnected from ${namespace} namespace`);
   });

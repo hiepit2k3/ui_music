@@ -14,7 +14,8 @@ const routes = [{ path: '/', name: 'home', component: HomeView },
 {
   path: '/roommusic/:roomid',
   name: 'roommusic',
-  component: MusicPlayer
+  component: MusicPlayer,
+  props: true,
 },
 {
   path: '/roommover',
