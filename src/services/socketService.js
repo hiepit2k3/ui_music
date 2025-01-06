@@ -1,51 +1,59 @@
-// socketService.js (Frontend)
-import { reactive } from "vue";
-import { io } from "socket.io-client"; // Import socket.io-client
+import { io } from "socket.io-client";
 
-const socketService = {
-  socket: null,
-  state: reactive({
-    isConnected: false,
-    lastMessage: null,
-  }),
-  connect(url) {
-    this.socket = io(url);  // Sử dụng socket.io để kết nối
-    this.socket.on("connect", () => {
-      this.state.isConnected = true;
-      console.log("Socket.IO connected");
-    });
-    this.socket.on("roomJoined", (data) => {
-      console.log(`Joined room: ${data.roomId}`);
-    });
+let socket = null;
 
-    this.socket.on("roomLeft", (data) => {
-      console.log(`Left room: ${data.roomId}`);
-    });
+const connectToNamespace = (namespace) => {
+  console.log(namespace);
+  if (socket) {
+    socket.disconnect();
+  }
 
-    this.socket.on("receiveMessage", (message) => {
-      console.log("Received message:", message);
-      this.state.lastMessage = message;
-    });
+  socket = io(`http://localhost:4000/${namespace}`, {
+    withCredentials: true,
+  });
 
-    this.socket.on("disconnect", () => {
-      this.state.isConnected = false;
-      console.warn("Socket.IO disconnected");
-    });
-  },
+  socket.on("connect", () => {
+    console.log(`Connected to ${namespace} namespace:`, socket.id);
+  });
 
-  sendMessage(action, payload) {
-    if (this.socket && this.state.isConnected) {
-      this.socket.emit(action, payload);  // Gửi sự kiện tới server
-    } else {
-      console.warn("Socket.IO is not connected");
-    }
-  },
+  socket.on("receiveMessage", (message) => {
+    console.log(`[${namespace}] Message received:`, message);
+  });
 
-  disconnect() {
-    if (this.socket) {
-      this.socket.disconnect();  // Ngắt kết nối
-    }
-  },
+  socket.on("disconnect", () => {
+    console.log(`Disconnected from ${namespace} namespace`);
+  });
+
+  return socket;
 };
 
-export default socketService;
+const joinRoom = (roomId) => {
+  if (!socket) {
+    console.error("Socket is not connected. Please connect first.");
+    return;
+  }
+  socket.emit("joinRoom", roomId);
+};
+
+const leaveRoom = (roomId) => {
+  if (!socket) {
+    console.error("Socket is not connected. Please connect first.");
+    return;
+  }
+  socket.emit("leaveRoom", roomId);
+};
+
+const sendMessage = (message) => {
+  if (!socket) {
+    console.error("Socket is not connected. Please connect first.");
+    return;
+  }
+  socket.emit("sendMessage", message);
+};
+
+export default {
+  connectToNamespace,
+  joinRoom,
+  leaveRoom,
+  sendMessage,
+};
