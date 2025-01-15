@@ -2,9 +2,10 @@
 import Playlist from "@/components/Playlist.vue";
 import CardNumberRoom from "@/components/CardNumberRoom.vue";
 import { ref, reactive, onMounted, onUnmounted } from "vue";
-import socketService from "@/services/socketService";
+import WebSocketClient from "@/services/socketService";
 import { axiosPrivateInstance } from "@/services/authAxios";
 import { useRoute } from "vue-router";
+
 
 const route = useRoute();
 const isPlaying = ref(false);
@@ -16,11 +17,9 @@ const roomId = ref(route.params.roomid);
 
 let player = null;
 let socket = null;
-
-// Cờ để kiểm tra YouTube Player đã sẵn sàng
+const ws = ref(null);
 const isPlayerReady = ref(false);
 
-// Lưu hành động chờ thực hiện khi Player sẵn sàng
 const queuedAction = ref(null);
 
 const musicState = reactive({
@@ -52,28 +51,6 @@ const searchMusic = async () => {
   }
 };
 
-const connectToSocket = () => {
-  // Kết nối tới namespace "music"
-  socket = socketService.connectToNamespace("music");
-
-  // Tham gia phòng
-  socketService.joinRoom(roomId.value);
-
-  // Lắng nghe các sự kiện từ server
-  socket.on("receiveMessage", (message) => {
-    console.log("Message received:", message);
-
-    if (isPlayerReady.value) {
-      // Thực hiện hành động ngay lập tức nếu Player đã sẵn sàng
-      handleSocketAction(message);
-    } else {
-      // Lưu hành động vào hàng đợi
-      console.log("Player not ready. Queuing action:", message);
-      queuedAction.value = message;
-    }
-  });
-};
-
 const disconnectFromSocket = () => {
   if (socket) {
     socketService.leaveRoom(roomId.value);
@@ -85,14 +62,13 @@ const disconnectFromSocket = () => {
 // Khi player đã sẵn sàng
 const onPlayerReady = () => {
   console.log("Player is ready!");
-  isPlayerReady.value = true; // Đánh dấu Player đã sẵn sàng
-  duration.value = player.getDuration(); // Lấy tổng thời gian video
+  isPlayerReady.value = true;
+  duration.value = player.getDuration();
 
-  // Thực hiện hành động từ hàng đợi nếu có
   if (queuedAction.value) {
     console.log("Executing queued action:", queuedAction.value);
     handleSocketAction(queuedAction.value);
-    queuedAction.value = null; // Xóa hành động sau khi thực hiện
+    queuedAction.value = null;
   }
 
   updateProgressBar();
@@ -118,17 +94,15 @@ const onPlayerStateChange = (event) => {
   }
 };
 
-// Cập nhật thanh tiến trình
 const updateProgressBar = () => {
   if (isPlaying.value) {
     const interval = setInterval(() => {
-      currentTime.value = player.getCurrentTime(); // Cập nhật thời gian hiện tại
+      currentTime.value = player.getCurrentTime();
       if (!isPlaying.value) clearInterval(interval);
-    }, 1000); // Cập nhật mỗi giây
+    }, 1000);
   }
 };
 
-// Play/Pause video
 const togglePlay = () => {
   if (isPlaying.value) {
     player.pauseVideo();
@@ -163,19 +137,31 @@ const formatTime = (seconds) => {
 };
 
 onMounted(() => {
-  // Kết nối tới WebSocket khi vào phòng
-  connectToSocket();
 
-  // Tải và khởi tạo YouTube Iframe Player API
+  ws.value = new WebSocketClient("ws://localhost:4000");
+  ws.value.connect();
+
+  ws.value.send(JSON.stringify({
+    event: "joinRoom", // Tên sự kiện
+    data: {
+      roomId: "room1" // Dữ liệu cần gửi
+    }
+  }));
+
+
+  ws.value.on("joined", data => {
+    console.log("Joined room", data);
+  });
+
   const tag = document.createElement("script");
   tag.src = "https://www.youtube.com/iframe_api";
   document.body.appendChild(tag);
 
   window.onYouTubeIframeAPIReady = () => {
     player = new YT.Player("player", {
-      videoId: musicState.youtubeVideoId, // ID video YouTube
+      videoId: musicState.youtubeVideoId,
       events: {
-        onReady: onPlayerReady, // Đảm bảo Player đã sẵn sàng
+        onReady: onPlayerReady,
         onStateChange: onPlayerStateChange,
       },
     });
@@ -183,7 +169,6 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  // Ngắt kết nối WebSocket khi rời phòng
   disconnectFromSocket();
 });
 </script>

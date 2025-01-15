@@ -1,69 +1,55 @@
-import { io } from "socket.io-client";
+// src/utils/websocket.js
 
-let socket = null;
-
-const connectToNamespace = (namespace) => {
-  console.log(namespace);
-  if (socket) {
-    socket.disconnect();
+export default class WebSocketClient {
+  constructor(url) {
+    this.url = url;
+    this.socket = null;
+    this.listeners = {};
   }
 
-  socket = io(`http://localhost:4000/${namespace}`, {
-    withCredentials: true,
-  });
+  connect() {
+    this.socket = new WebSocket(this.url);
 
-  socket.on("connect", () => {
-    console.log(`Connected to ${namespace} namespace:`, socket.id);
-  });
+    this.socket.onopen = () => {
+      this.socket = this.socket.readyState;
+      console.log("WebSocket connected");
+    };
 
-  socket.on("receiveMessage", (message) => {
-    console.log(`[${namespace}] Message received:`, message);
-  });
+    this.socket.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      console.log("Message received:", message);
 
-  socket.on("userJoined", (data) => {
-    console.log(`User ${data.userId} joined room ${data.roomId}`);
-    // Cập nhật danh sách thành viên
-  });
-  
-  socket.on("userLeft", (data) => {
-    console.log(`User ${data.userId} left room ${data.roomId}`);
-    // Cập nhật danh sách thành viên
-  });
+      // Gọi callback được đăng ký
+      if (this.listeners[message.event]) {
+        this.listeners[message.event](message);
+      }
+    };
 
-  socket.on("disconnect", () => {
-    console.log(`Disconnected from ${namespace} namespace`);
-  });
+    this.socket.onclose = () => {
+      console.log("WebSocket disconnected");
+    };
 
-  return socket;
-};
-
-const joinRoom = (roomId) => {
-  if (!socket) {
-    console.error("Socket is not connected. Please connect first.");
-    return;
+    this.socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
   }
-  socket.emit("joinRoom", roomId);
-};
 
-const leaveRoom = (roomId) => {
-  if (!socket) {
-    console.error("Socket is not connected. Please connect first.");
-    return;
+  // send(data) {
+  //   console.log("Send message:", this.socket.readyState);
+  //   if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+  //     this.socket.send(JSON.stringify(data));
+  //   } else {
+  //     console.error("WebSocket is not open");
+  //   }
+  // }
+
+  on(event, callback) {
+    this.listeners[event] = callback;
   }
-  socket.emit("leaveRoom", roomId);
-};
 
-const sendMessage = (message) => {
-  if (!socket) {
-    console.error("Socket is not connected. Please connect first.");
-    return;
+  close() {
+    if (this.socket) {
+      this.socket.close();
+    }
   }
-  socket.emit("sendMessage", message);
-};
-
-export default {
-  connectToNamespace,
-  joinRoom,
-  leaveRoom,
-  sendMessage,
-};
+}
