@@ -17,7 +17,6 @@ const roomId = ref(route.params.roomid);
 
 let player = null;
 let socket = null;
-const ws = ref(null);
 const isPlayerReady = ref(false);
 
 const queuedAction = ref(null);
@@ -137,21 +136,26 @@ const formatTime = (seconds) => {
 };
 
 onMounted(() => {
+  const wsClient = new WebSocketClient("ws://localhost:4000");
+  wsClient.connect()
+    .then(() => {
+      wsClient.send("joinRoom", { roomId: "room1" })
+        .then(() => {
+          console.log("Sent joinRoom message");
+        })
+        .catch((error) => {
+          console.error("Error sending message:", error);
+        });
+    })
+    .catch((error) => {
+      console.error("Error connecting to WebSocket:", error);
+    });
 
-  ws.value = new WebSocketClient("ws://localhost:4000");
-  ws.value.connect();
-
-  ws.value.send(JSON.stringify({
-    event: "joinRoom", // Tên sự kiện
-    data: {
-      roomId: "room1" // Dữ liệu cần gửi
-    }
-  }));
-
-
-  ws.value.on("joined", data => {
-    console.log("Joined room", data);
+  // Lắng nghe sự kiện khi người dùng gia nhập phòng
+  wsClient.on("userJoined", (data) => {
+    console.log("User joined room:", data);
   });
+
 
   const tag = document.createElement("script");
   tag.src = "https://www.youtube.com/iframe_api";

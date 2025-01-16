@@ -2,27 +2,12 @@
   <div>
     <!-- Form Overlay -->
     <div v-if="showSearchForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="relative bg-gradient-to-br from-gray-100 to-gray-300 rounded-3xl p-8 shadow-xl w-80 text-center">
+      <div class="relative bg-gradient-to-br from-gray-100 to-gray-300 rounded-3xl w-3/5 h-4/5 p-8 shadow-xl text-center">
         <div @click="toggleSearchForm"
-          class="absolute w-14 h-14 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full shadow-lg -top-7 -left-7 cursor-pointer flex items-center justify-center">
-          <i class="fas fa-times text-white text-xl"></i>
+          class="absolute w-12 h-12 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full shadow-lg -top-6 -right-6 cursor-pointer flex items-center justify-center">
+          <i class="fas fa-times text-white text-lg"></i>
         </div>
-        <div
-          class="absolute w-8 h-8 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full shadow-lg -bottom-4 -right-4">
-        </div>
-        <h1 class="text-2xl font-bold text-gray-700 mb-4">SEARCH {{ title }}</h1>
-        <p class="text-lg text-gray-600 mb-6">Enter Room ID to Search...</p>
-        <div class="mb-6">
-          <input type="text" placeholder="Enter Room ID" v-model="roomID"
-            class="w-full bg-gradient-to-br from-gray-200 to-gray-300 text-center text-gray-700 py-2 px-4 rounded-full shadow-inner focus:outline-none focus:ring-2 focus:ring-gray-500" />
-        </div>
-        <div class="button-container">
-          <button @click="submitDataSearchRoom"
-            class="w-full bg-blue-500 text-white py-2 px-4 rounded-full shadow hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 transition flex items-center justify-center">
-            <i class="fas fa-search text-white text-xl mr-2"></i>
-            <span>Search</span>
-          </button>
-        </div>
+        <FormSearch/>
       </div>
     </div>
 
@@ -127,11 +112,14 @@
 </template>
 
 <script>
-import { handler } from 'flowbite/plugin';
-import { axiosInstance, axiosPrivateInstance } from "@/services/authAxios";
+import { axiosPrivateInstance } from "@/services/authAxios";
+import FormSearch from "@/components/home_component/FormSearch.vue";
 
 export default {
   name: "RoomInput",
+  components: {
+    FormSearch,
+  },
   props: ["title", "description", "image", "roomClass"],
   data() {
     return {
@@ -190,8 +178,6 @@ export default {
           roomID: this.roomID,
         });
         if (response.status === 200) {
-          alert("Join room success!");
-          this.resetForm();
           console.log(response);  
         }
       } catch (error) {
