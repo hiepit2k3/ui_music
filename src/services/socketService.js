@@ -1,74 +1,69 @@
-export default class WebSocketClient {
-  constructor(url) {
-    this.url = url;
-    this.socket = null;
-    this.listeners = {};
-    this.isConnected = false; // Trạng thái kết nối
+import { io } from "socket.io-client";
+
+let socket = null;
+
+const connectToNamespace = (namespace) => {
+  console.log(namespace);
+  if (socket) {
+    socket.disconnect();
   }
 
-  connect() {
-    return new Promise((resolve, reject) => {
-      if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-        resolve(); // Nếu socket đã kết nối, trả về ngay
-        return;
-      }
+  socket = io(`http://localhost:4000/${namespace}`, {
+    withCredentials: true,
+  });
 
-      this.socket = new WebSocket(this.url);
+  socket.on("connect", () => {
+    console.log(`Connected to ${namespace} namespace:`, socket.id);
+  });
 
-      this.socket.onopen = () => {
-        console.log("WebSocket connected");
-        this.isConnected = true; // Đánh dấu kết nối đã sẵn sàng
-        resolve(); // Trả về Promise khi kết nối thành công
-      };
+  socket.on("receiveMessage", (message) => {
+    console.log(`[${namespace}] Message received:`, message);
+  });
 
-      this.socket.onmessage = (event) => {
-        const message = JSON.parse(event.data);
-        console.log("Message received:", message);
-
-        // Gọi callback được đăng ký nếu sự kiện tồn tại
-        if (this.listeners[message.event]) {
-          this.listeners[message.event](message.data);
-        }
-      };
-
-      this.socket.onclose = () => {
-        console.log("WebSocket disconnected");
-        this.isConnected = false; // Đánh dấu kết nối bị ngắt
-      };
-
-      this.socket.onerror = (error) => {
-        console.error("WebSocket error:", error);
-        reject(error); // Nếu có lỗi xảy ra, từ chối Promise
-      };
-    });
-  }
-
-  send(event, data) {
-    return new Promise((resolve, reject) => {
-      if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-        const message = {
-          event: event, // Tên sự kiện
-          data: data,   // Dữ liệu sự kiện
-        };
-        this.socket.send(JSON.stringify(message));
-        console.log("Sent message:", message);
-        resolve(); // Trả về Promise khi gửi thành công
-      } else {
-        console.error("WebSocket is not open");
-        reject(new Error("WebSocket is not open"));
-      }
-    });
-  }
-
-  on(event, callback) {
-    // Đăng ký callback cho một sự kiện
-    this.listeners[event] = callback;
-  }
-
-  close() {
-    if (this.socket) {
-      this.socket.close();
-    }
-  }
-}
+  socket.on("userJoined", (data) => {
+    console.log(`User ${data.userId} joined room ${data.roomId}`);
+    // Cập nhật danh sách thành viên
+  });
   
+  socket.on("userLeft", (data) => {
+    console.log(`User ${data.userId} left room ${data.roomId}`);
+    // Cập nhật danh sách thành viên
+  });
+
+  socket.on("disconnect", () => {
+    console.log(`Disconnected from ${namespace} namespace`);
+  });
+
+  return socket;
+};
+
+const joinRoom = (roomId) => {
+  if (!socket) {
+    console.error("Socket is not connected. Please connect first.");
+    return;
+  }
+  socket.emit("joinRoom", roomId);
+};
+
+const leaveRoom = (roomId) => {
+  if (!socket) {
+    console.error("Socket is not connected. Please connect first.");
+    return;
+  }
+  socket.emit("leaveRoom", roomId);
+};
+
+const sendMessage = (message) => {
+  if (!socket) {
+    console.error("Socket is not connected. Please connect first.");
+    return;
+  }
+  socket.emit("sendMessage", message);
+};
+
+export default {
+  connectToNamespace,
+  joinRoom,
+  leaveRoom,
+  sendMessage,
+};

@@ -2,7 +2,7 @@
   <div>
     <!-- Form Overlay -->
     <div v-if="showSearchForm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="relative bg-gradient-to-br from-gray-100 to-gray-300 rounded-3xl w-3/5 h-4/5 p-8 shadow-xl text-center">
+      <div class="relative bg-gradient-to-br from-gray-100 to-gray-300 rounded-3xl w-3/5 p-8 shadow-xl text-center">
         <div @click="toggleSearchForm"
           class="absolute w-12 h-12 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full shadow-lg -top-6 -right-6 cursor-pointer flex items-center justify-center">
           <i class="fas fa-times text-white text-lg"></i>
