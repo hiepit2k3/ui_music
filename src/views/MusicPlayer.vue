@@ -72,6 +72,10 @@ const connectToSocket = () => {
       queuedAction.value = message;
     }
   });
+
+  socket.on("syncMusic", (data) => {
+    console.log("Syncing music:", data);
+  });
 };
 
 const disconnectFromSocket = () => {
