@@ -13,6 +13,7 @@ const searchResults = ref([]);
 const currentTime = ref(0);
 const duration = ref(0);
 const roomId = ref(route.params.roomid);
+const permission = ref("");
 
 let player = null;
 let socket = null;
@@ -26,7 +27,7 @@ const queuedAction = ref(null);
 const musicState = reactive({
   songTitle: "Song Title",
   artistName: "Artist Name",
-  youtubeVideoId: "stvWuowo1dU",
+  youtubeVideoId: null,
   numbers: [
     {
       avatar: "src/assets/image/avatar_A.jpg",
@@ -47,6 +48,7 @@ const searchMusic = async () => {
       query: searcher.value,
     });
     searchResults.value = response.data.data;
+    console.log("Search results:", searchResults.value);
   } catch (error) {
     console.error("Search Music Error:", error);
   }
@@ -59,22 +61,22 @@ const connectToSocket = () => {
   // Tham gia phòng
   socketService.joinRoom(roomId.value);
 
-  // Lắng nghe các sự kiện từ server
   socket.on("receiveMessage", (message) => {
     console.log("Message received:", message);
-
-    if (isPlayerReady.value) {
-      // Thực hiện hành động ngay lập tức nếu Player đã sẵn sàng
-      handleSocketAction(message);
+    if (message.action === "changeSong") {
+      musicState.youtubeVideoId = message.video_source;
+      player.loadVideoById(musicState.youtubeVideoId);
+      setTimeout(() => {
+        player.seekTo(10);
+      }, 1000);
     } else {
-      // Lưu hành động vào hàng đợi
-      console.log("Player not ready. Queuing action:", message);
-      queuedAction.value = message;
+      handleSocketAction(message);
     }
   });
 
   socket.on("syncMusic", (data) => {
     console.log("Syncing music:", data);
+    permission.value = data.role;
   });
 };
 
@@ -86,17 +88,15 @@ const disconnectFromSocket = () => {
   }
 };
 
-// Khi player đã sẵn sàng
 const onPlayerReady = () => {
   console.log("Player is ready!");
-  isPlayerReady.value = true; // Đánh dấu Player đã sẵn sàng
-  duration.value = player.getDuration(); // Lấy tổng thời gian video
+  isPlayerReady.value = true;
+  duration.value = player.getDuration();
 
-  // Thực hiện hành động từ hàng đợi nếu có
   if (queuedAction.value) {
     console.log("Executing queued action:", queuedAction.value);
     handleSocketAction(queuedAction.value);
-    queuedAction.value = null; // Xóa hành động sau khi thực hiện
+    queuedAction.value = null;
   }
 
   updateProgressBar();
@@ -135,17 +135,17 @@ const updateProgressBar = () => {
 // Play/Pause video
 const togglePlay = () => {
   if (isPlaying.value) {
-    player.pauseVideo();
     socketService.sendMessage({
       action: "pause",
       roomId: roomId.value,
     });
+    player.pauseVideo();
   } else {
-    player.playVideo();
     socketService.sendMessage({
       action: "play",
       roomId: roomId.value,
     });
+    player.playVideo();
   }
 };
 
@@ -166,6 +166,19 @@ const formatTime = (seconds) => {
   return `${minutes}:${secs < 10 ? "0" : ""}${secs}`;
 };
 
+const handleChooseMusic = (videoId) => {
+  musicState.youtubeVideoId = videoId;
+  musicState.songTitle = searchResults.value.find((result) => result.videoId === videoId).title;
+  player.loadVideoById(videoId);
+  socketService.sendMessage({
+    action: "changeSong",
+    roomId: roomId.value,
+    youtubeVideoId: videoId,
+    isPlaying: isPlaying.value,
+  });
+};
+
+
 onMounted(() => {
   // Kết nối tới WebSocket khi vào phòng
   connectToSocket();
@@ -177,9 +190,9 @@ onMounted(() => {
 
   window.onYouTubeIframeAPIReady = () => {
     player = new YT.Player("player", {
-      videoId: musicState.youtubeVideoId, // ID video YouTube
+      videoId: musicState.youtubeVideoId,
       events: {
-        onReady: onPlayerReady, // Đảm bảo Player đã sẵn sàng
+        onReady: onPlayerReady,
         onStateChange: onPlayerStateChange,
       },
     });
@@ -215,7 +228,7 @@ onUnmounted(() => {
           <div v-if="searchResults.length > 0">
             <div v-for="(result, index) in searchResults" :key="index"
               class="mt-3 h-40 flex flex-col justify-center gap-2 bg-indigo-500 rounded-lg shadow p-2">
-              <div class="flex gap-2">
+              <div class="flex gap-2" @click="handleChooseMusic(result.videoId)">
                 <img :src="result.thumbnail" alt="" class="bg-purple-200 w-24 h-24 shrink-0 rounded-lg" />
                 <div class="flex flex-col text-white">
                   <span class="font-bold italic">{{ result.title }}</span>
@@ -253,7 +266,7 @@ onUnmounted(() => {
             <div id="player"></div>
           </div>
           <div class="mt-4 text-center">
-            <button @click="togglePlay"
+            <button @click="togglePlay" :disabled="permission !== 'OWNER'"
               class="bg-pink-500 text-white font-bold px-4 py-2 rounded-full shadow-md hover:bg-indigo-600 transition">
               {{ isPlaying ? "Pause" : "Play" }}
             </button>
