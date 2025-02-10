@@ -1,7 +1,7 @@
 import axios from "axios";
 import router from '../router/index.js';
 
-const API_URL = "http://localhost:3000/auth/";
+const API_URL = "http://ec2-54-196-185-198.compute-1.amazonaws.com/auth/";
 
 export const axiosInstance = axios.create({
   baseURL: API_URL,
