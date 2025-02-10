@@ -1,9 +1,7 @@
 <script setup>
-import TheWelcome from '../components/TheWelcome.vue'
+import ContentGrid from '@/components/ContentGrid.vue';
 </script>
 
 <template>
-  <main>
-    <TheWelcome />
-  </main>
+  <ContentGrid/>
 </template>
