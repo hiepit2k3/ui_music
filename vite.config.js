@@ -11,14 +11,5 @@ export default defineConfig({
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
-  },
-  server: {
-    proxy: {
-      "/api": {
-        target: "http://ec2-54-196-185-198.compute-1.amazonaws.com",
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ""),
-      },
-    },
-  },
+  }
 });
