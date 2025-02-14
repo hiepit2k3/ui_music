@@ -8,7 +8,7 @@ const connectToNamespace = (namespace) => {
     socket.disconnect();
   }
 
-  socket = io(`http://localhost:4000/${namespace}`, {
+  socket = io(`http://ec2-34-229-20-179.compute-1.amazonaws.com:4000/${namespace}`, {
     withCredentials: true,
   });
 
