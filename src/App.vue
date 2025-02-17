@@ -1,7 +1,7 @@
 <template>
     <div class="min-h-screen w-full flex flex-col items-center relative">
         <div class="w-full md::min-h-screen md::bg-cover bg-center"
-            style="background-image: url('/src/assets/image/background_main.jpg');">
+            style="background-image: url('src/assets/image/background_main.jpg');">
             <!-- Gradient chỉ ở phía dưới -->
             <div class="absolute bottom-0 left-0 w-full"></div>
 
