@@ -20,10 +20,12 @@
 </template>
 
 <script>
+import img_404 from '../assets/image/404.gif';
+
 export default {
     data() {
         return {
-            robotIcon: "/src/assets/image/404.gif",
+            robotIcon: img_404,
             positions: [
                 { class: "top-4 left-4", src: "https://placehold.co/24x24" },
                 { class: "top-4 right-4", src: "https://placehold.co/24x24" },

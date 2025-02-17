@@ -1,7 +1,7 @@
 <template>
     <div class="min-h-screen w-full flex flex-col items-center relative">
         <div class="w-full md::min-h-screen md::bg-cover bg-center"
-            style="background-image: url('src/assets/image/background_main.jpg');">
+        :style="{ backgroundImage: 'url(' + background_main + ')' }">
             <!-- Gradient chỉ ở phía dưới -->
             <div class="absolute bottom-0 left-0 w-full"></div>
 
@@ -35,15 +35,21 @@ import AvatarComponent from "./components/AvatarComponent.vue";
 import RoomCodeComponent from "./components/RoomCodeComponent.vue";
 import BackgroundDecorations from "./components/BackgroundDecorations.vue";
 import HeroSection from "./components/HeroSection.vue";
+import background_main from "../src/assets/image/background_main.jpg";
 
 export default {
+    data() {
+        return {
+            background_main,
+        };
+    },
     components: {
         HeaderComponent,
         LoginRegisterForm,
         AvatarComponent,
         RoomCodeComponent,
         HeroSection,
-        BackgroundDecorations,
+        BackgroundDecorations
     },
 };
 </script>
