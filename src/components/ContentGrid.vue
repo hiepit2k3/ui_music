@@ -9,10 +9,10 @@
       <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-8">
         <RoomCard class="bg-gradient-to-br from-blue-200 to-blue-400
  shadow-lg rounded-2xl" title="MUSIC ROOM" description="Listen to your favorite tunes with friends in real-time."
-          buttonColor="bg-blue-500" image="/src/assets/image/logo_music.webp" />
+          buttonColor="bg-blue-500" :image="logoMusic" />
         <RoomCard class="bg-gradient-to-br from-pink-200 to-pink-400 shadow-lg rounded-2xl  
 " title="MOVIE ROOM" description="Watch movies together with friends in sync." buttonColor="bg-pink-500"
-          image="/src/assets/image/logo_movie.webp" />
+          :image="logoMovie" />
       </div>
 
       <div class="flex items-center justify-center space-x-4 mt-8">
@@ -35,8 +35,16 @@ import MainContainer from "./home_component/MainContainer.vue";
 import RoomCard from "./home_component/RoomCard.vue";
 import IconButton from "./home_component/IconButton.vue";
 import DecorativeIcons from "./home_component/DecorativeIcons.vue";
+import logoMusic from "../assets/image/logo_music.webp";
+import logoMovie from "../assets/image/logo_movie.webp";
 
 export default {
+  data() {
+    return {
+      logoMusic,
+      logoMovie,
+    };
+  },
   components: {
     MainContainer,
     RoomCard,

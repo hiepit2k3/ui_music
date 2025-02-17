@@ -1,7 +1,7 @@
 <template>
   <div class="top-0 left-0 w-full flex justify-between items-center p-4 bg-transparent">
     <!-- Logo -->
-    <img src="../assets/image/logo.png" alt="">
+    <img src="../assets/image/logo.png" alt="Logo">
 
     <!-- Menu Điều Hướng (ẩn trên màn hình nhỏ) -->
     <div class="hidden md:flex space-x-8">
@@ -10,7 +10,7 @@
       <router-link to="/" class="text-pink-600 font-semibold no-underline hover:underline">Pricing</router-link>
     </div>
 
-    <div class="flex space-x-4" v-if="isAuthenticated">
+    <div class="flex space-x-4 md:block hidden" v-if="isAuthenticated">
       <AvatarDropdown />
     </div>
 
