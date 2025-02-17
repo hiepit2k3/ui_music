@@ -1,7 +1,7 @@
 <template>
     <div class="min-h-screen w-full flex flex-col items-center relative">
         <div class="w-full md::min-h-screen md::bg-cover bg-center"
-            style="background-image: url('../src/assets/image/background_main.jpg');">
+            style="background-image: url('/src/assets/image/background_main.jpg');">
             <!-- Gradient chỉ ở phía dưới -->
             <div class="absolute bottom-0 left-0 w-full"></div>
 
@@ -11,7 +11,7 @@
                 <HeroSection />
             </div>
         </div>
-        <div class="d-flex justify-center md:min-h-screen lg:min-h-screen xl:min-h-screen xl:w-1/2">
+        <div class="d-flex justify-center md:min-h-screen lg:min-h-screen">
             <router-view></router-view>
         </div>
 

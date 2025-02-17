@@ -27,6 +27,11 @@ const routes = [
     path: "/about",
     name: "about",
     component: () => import("../views/AboutView.vue"),
+  },
+  {
+    path: "/:pathMatch(.*)*",  // Catch-all route for 404 page
+    name: "notfound",
+    component: () => import("../views/404.vue"),
   }
 ];
 
