@@ -26,11 +26,11 @@ export default createStore({
             isAuthenticated: true,
             permission: response.data.data.permission,
           });
-        } else {
-          throw new Error("Đăng nhập thất bại");
+          return response;
         }
+        return response;
       } catch (error) {
-        console.error(error);
+        return error;
       }
     },
     async checkAuth({ commit }) {
