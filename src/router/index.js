@@ -29,6 +29,11 @@ const routes = [
     component: () => import("../views/AboutView.vue"),
   },
   {
+    path: "/register",
+    name: "register",
+    component: () => import("../views/RegisterForm.vue"),
+  },
+  {
     path: "/:pathMatch(.*)*",  // Catch-all route for 404 page
     name: "notfound",
     component: () => import("../views/404.vue"),

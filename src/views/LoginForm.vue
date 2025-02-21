@@ -53,17 +53,20 @@ export default {
           toast.open({
             message: 'Login successfully!',
             type: 'success',
+            position:"top-right"
           });
         }else if(respone.status === 401 || respone.status === 404){
           toast.open({
             message: 'Email or password is incorrect!',
-            type: 'error',
+            type: 'warning',
+            position:"top-right"
           });
         }
       } catch (error) {
         toast.open({
           message: 'Email or password is incorrect!',
-          type: 'error',
+          type: 'warning',
+          position:"top-right"
         });
       }
     },
