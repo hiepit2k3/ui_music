@@ -30,12 +30,12 @@
 
 <script>
 import HeaderComponent from "./components/HeaderComponent.vue";
-import LoginRegisterForm from "./components/LoginRegisterForm.vue";
 import AvatarComponent from "./components/AvatarComponent.vue";
 import RoomCodeComponent from "./components/RoomCodeComponent.vue";
 import BackgroundDecorations from "./components/BackgroundDecorations.vue";
 import HeroSection from "./components/HeroSection.vue";
 import background_main from "../src/assets/image/background_main.jpg";
+import RegisterForm from "./views/RegisterForm.vue";
 
 export default {
     data() {
@@ -45,11 +45,11 @@ export default {
     },
     components: {
         HeaderComponent,
-        LoginRegisterForm,
         AvatarComponent,
         RoomCodeComponent,
         HeroSection,
-        BackgroundDecorations
+        BackgroundDecorations,
+        RegisterForm
     },
 };
 </script>
