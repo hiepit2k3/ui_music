@@ -7,7 +7,7 @@
           class="absolute w-12 h-12 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full shadow-lg -top-6 -right-6 cursor-pointer flex items-center justify-center">
           <i class="fas fa-times text-white text-lg"></i>
         </div>
-        <FormSearch/>
+        <FormSearch :type_room="type_room"/>
       </div>
     </div>
 
@@ -120,7 +120,23 @@ export default {
   components: {
     FormSearch,
   },
-  props: ["title", "description", "image", "roomClass"],
+  props:{ 
+    title: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    image: {
+      type: String,
+      required: true,
+    },
+    type_room: {
+      type: String
+    },
+  },
   data() {
     return {
       showSearchForm: false,
@@ -165,7 +181,7 @@ export default {
         if (response.status === 200) {
           alert("Create room success!");
           this.resetForm();
-          this.toggleCreateForm();  
+          this.toggleCreateForm();
         }
       } catch (error) {
         alert("Create room fail!");
@@ -178,7 +194,7 @@ export default {
           roomID: this.roomID,
         });
         if (response.status === 200) {
-          console.log(response);  
+          console.log(response);
         }
       } catch (error) {
         console.log(JSON.parse(error.config.data).roomID);

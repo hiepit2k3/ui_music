@@ -1,15 +1,13 @@
 <template>
     <div class="h-full">
-        <!-- Tiêu đề và các nút điều khiển -->
         <div class="flex justify-between items-center mb-6">
             <div class="text-3xl font-bold text-gray-800">Search</div>
         </div>
 
-        <!-- Tìm kiếm -->
         <div class="flex justify-center mb-6 w-full max-w-2xl mx-auto">
             <input
                 class="bg-zinc-200 text-zinc-600 lg:w-3/4 w-full font-mono ring-1 ring-zinc-400 focus:ring-2 focus:ring-rose-400 outline-none duration-300 placeholder:text-zinc-600 placeholder:opacity-50 rounded-full px-4 py-2 shadow-md focus:shadow-lg focus:shadow-rose-400 dark:shadow-md dark:shadow-purple-500"
-                autocomplete="off" placeholder="Search here..." name="text" type="text" />
+                autocomplete="off" placeholder="Search here..." v-model="searchQuery" name="text" type="text" />
             <span @click="searchRoom"
                 class="rounded-full bg-zinc-200 text-zinc-600 font-mono ring-1 ring-zinc-400 focus:ring-2 focus:ring-rose-400 outline-none duration-300 placeholder:text-zinc-600 placeholder:opacity-50 rounded-full px-2 py-2 rotate-[45deg] ml-2 shadow-md focus:shadow-lg focus:shadow-rose-400 dark:shadow-md dark:shadow-purple-500"><svg
                     xmlns="http://www.w3.org/2000/svg" class="w-6" viewBox="0 0 128 128">
@@ -78,69 +76,70 @@
                 </svg></span>
         </div>
 
-
         <!-- Khu vực hiển thị kết quả -->
         <div class="flex flex-wrap justify-center gap-6">
-            <!-- Nếu có dữ liệu, hiển thị danh sách card -->
-            <div v-if="items.length" v-for="(item, index) in items" :key="index"
-                :class="item.bgColor + ' rounded-3xl p-4 text-white shadow-lg w-full sm:w-1/2 md:w-1/3 lg:w-1/4'">
-                <div class="text-center mb-4"></div>
-                <img :src="item.image" alt="Illustration" class="mx-auto mb-4" />
-                <div class="text-center font-bold mb-2">{{ item.name }}</div>
-                <div class="flex justify-center items-center space-x-2 mb-4">
-                    <div class="flex items-center space-x-1">
-                        <i class="fas fa-users"></i>
-                        <span>{{ item.users }}</span>
+            <CardLoading v-if="loading" v-for="index in 3" :key="index" />
+            <div v-else-if="items.length > 0" class="flex flex-col sm:flex-col md:flex-col lg:flex-row justify-center gap-6">
+                <div v-for="(item, index) in items" :key="index"
+                    class="bg-red-400 rounded-3xl p-4 text-white shadow-lg w-full">
+
+                    <img src="https://placehold.co/100x100" alt="Illustration" class="mx-auto mb-4" />
+                    <div class="text-center font-bold mb-2">{{ item.name }}</div>
+
+                    <div class="flex justify-center items-center space-x-2 mb-4">
+                        <div class="flex items-center space-x-1">
+                            <i class="fas fa-users"></i>
+                            <span>100</span>
+                        </div>
+                        <div class="flex items-center space-x-1">
+                            <i class="fas fa-heart"></i>
+                            <span>{{ item.likes }}</span>
+                        </div>
                     </div>
-                    <div class="flex items-center space-x-1">
-                        <i class="fas fa-heart"></i>
-                        <span>{{ item.likes }}</span>
-                    </div>
+
+                    <button class="bg-pink-500 text-white rounded-full px-4 py-2 w-full" @click="join(item.name)">
+                        Join Now
+                    </button>
                 </div>
-                <button class="bg-blue-500 text-white rounded-full px-4 py-2 w-full" @click="join(item.name)">
-                    Join Now
-                </button>
             </div>
 
-            <!-- Nếu không có dữ liệu, hiển thị thông báo -->
-            <div v-else class="w-full text-center text-gray-500">
+            <div v-else-if="searchQuery && !loading" class="w-full text-center text-gray-500">
                 No results found. Try a different search!
             </div>
         </div>
 
     </div>
 </template>
+<script setup>
+import { defineProps } from "vue";
 
+defineProps({
+    type_room: String,
+});
+</script>
 
 <script>
 import { axiosPrivateInstance } from '@/services/authAxios';
+import CardLoading from '../loading/CardLoading.vue';
 
 export default {
     name: 'FormSearch',
+    props: {
+        type_room: {
+            type: String,
+            required: false,
+        },
+    },
+    components: {
+        CardLoading,
+    },
     data() {
         return {
+            loading: false,
             userPoints: 30,
             progress: 5,
             searchQuery: '',
-            searchQuery: '',
-            items: [
-                {
-                    title: 'Rearch roun, perguictafaters',
-                    image: 'https://placehold.co/100x100',
-                    name: 'Case Mame',
-                    users: 2,
-                    likes: 110,
-                    bgColor: 'bg-red-400',
-                },
-                {
-                    title: 'Rotea plaigod stecinpiripepies',
-                    image: 'https://placehold.co/100x100',
-                    name: 'Läzy Haim',
-                    users: 2,
-                    likes: 110,
-                    bgColor: 'bg-pink-400',
-                },
-            ],
+            items: [],
         };
     },
     methods: {
@@ -153,14 +152,16 @@ export default {
         join(itemName) {
             alert(`Joining: ${itemName}`);
         },
-
-
         async searchRoom() {
+            this.loading = true;
+            alert(`Searching for: ${this.type_room}`);
             try {
-                console.log('Searching room:', this.searchQuery);
-                const response = await axiosPrivateInstance.get(`/room/searchRoom?search=${this.searchQuery}`);
-
-                console.log('Search results:', response.data);
+                setTimeout( async() => {
+                    const response = await axiosPrivateInstance.get(`/room/searchRoom?search=${this.searchQuery}&option=${this.type_room}`);
+                    console.log('Search results:', response.data.data.room);
+                    this.items = response.data.data.room;
+                    this.loading = false;
+                }, 3000);
             } catch (error) {
                 console.error("Error searching room:", error);
             }

@@ -9,10 +9,10 @@
       <div class="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-8">
         <RoomCard class="bg-gradient-to-br from-blue-200 to-blue-400
  shadow-lg rounded-2xl" title="MUSIC ROOM" description="Listen to your favorite tunes with friends in real-time."
-          buttonColor="bg-blue-500" :image="logoMusic" />
+          buttonColor="bg-blue-500" :image="logoMusic" :type_room="audio" />
         <RoomCard class="bg-gradient-to-br from-pink-200 to-pink-400 shadow-lg rounded-2xl  
 " title="MOVIE ROOM" description="Watch movies together with friends in sync." buttonColor="bg-pink-500"
-          :image="logoMovie" />
+          :image="logoMovie" :type_room="video" />
       </div>
 
       <div class="flex items-center justify-center space-x-4 mt-8">
@@ -43,6 +43,8 @@ export default {
     return {
       logoMusic,
       logoMovie,
+      audio: "audio",
+      video: "video",
     };
   },
   components: {
