@@ -55,6 +55,7 @@ export default {
             type: 'success',
             position:"top-right"
           });
+          this.$router.push('/');
         }else if(respone.status === 401 || respone.status === 404){
           toast.open({
             message: 'Email or password is incorrect!',

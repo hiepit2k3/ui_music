@@ -79,7 +79,8 @@
         <!-- Khu vực hiển thị kết quả -->
         <div class="flex flex-wrap justify-center gap-6">
             <CardLoading v-if="loading" v-for="index in 3" :key="index" />
-            <div v-else-if="items.length > 0" class="flex flex-col sm:flex-col md:flex-col lg:flex-row justify-center gap-6">
+            <div v-else-if="items.length > 0"
+                class="flex flex-col sm:flex-col md:flex-col lg:flex-row justify-center gap-6">
                 <div v-for="(item, index) in items" :key="index"
                     class="bg-red-400 rounded-3xl p-4 text-white shadow-lg w-full">
 
@@ -97,9 +98,15 @@
                         </div>
                     </div>
 
-                    <button class="bg-pink-500 text-white rounded-full px-4 py-2 w-full" @click="join(item.name)">
+                    <button class="bg-pink-500 text-white rounded-full px-4 py-2 w-full"
+                        @click="checkIsPassword(item.room_id, item.name)">
                         Join Now
                     </button>
+                </div>
+
+                <div v-if="showFormInputPassword"
+                    class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <AlertInputPassword :room_id="id_room_password" :name_room="name_room_password" @close="showFormInputPassword = false"/>
                 </div>
             </div>
 
@@ -121,6 +128,7 @@ defineProps({
 <script>
 import { axiosPrivateInstance } from '@/services/authAxios';
 import CardLoading from '../loading/CardLoading.vue';
+import AlertInputPassword from "../form_password/AlertInputPassword.vue";
 
 export default {
     name: 'FormSearch',
@@ -132,6 +140,7 @@ export default {
     },
     components: {
         CardLoading,
+        AlertInputPassword
     },
     data() {
         return {
@@ -140,23 +149,30 @@ export default {
             progress: 5,
             searchQuery: '',
             items: [],
+            showFormInputPassword: false,
+            id_room_password:null,
+            name_room_password:null
         };
     },
     methods: {
-        play() {
-            alert('Play button clicked!');
+        toggleShowFormInputPassword() {
+            this.showFormInputPassword = !this.showFormInputPassword;
         },
-        search() {
-            alert(`Search for: ${this.searchQuery}`);
-        },
-        join(itemName) {
-            alert(`Joining: ${itemName}`);
+        checkIsPassword(room_id, name) {
+            const room = this.items.find(room => room.room_id === room_id);
+            if (room.is_password == true) {
+                this.toggleShowFormInputPassword();
+                this.id_room_password = room_id;
+                this.name_room_password = name;
+            }
+            else{
+                this.$router.push('/roommusic/'+room_id);
+            }
         },
         async searchRoom() {
             this.loading = true;
-            alert(`Searching for: ${this.type_room}`);
             try {
-                setTimeout( async() => {
+                setTimeout(async () => {
                     const response = await axiosPrivateInstance.get(`/room/searchRoom?search=${this.searchQuery}&option=${this.type_room}`);
                     console.log('Search results:', response.data.data.room);
                     this.items = response.data.data.room;
