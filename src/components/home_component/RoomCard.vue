@@ -7,7 +7,7 @@
           class="absolute w-12 h-12 bg-gradient-to-br from-gray-300 to-gray-400 rounded-full shadow-lg -top-6 -right-6 cursor-pointer flex items-center justify-center">
           <i class="fas fa-times text-white text-lg"></i>
         </div>
-        <FormSearch/>
+        <FormSearch :type_room="type_room"/>
       </div>
     </div>
 
@@ -114,13 +114,34 @@
 <script>
 import { axiosPrivateInstance } from "@/services/authAxios";
 import FormSearch from "@/components/home_component/FormSearch.vue";
+import { mapActions } from 'vuex';
+import { useToast } from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-sugar.css';
+
+const toast = useToast();
 
 export default {
   name: "RoomInput",
   components: {
     FormSearch,
   },
-  props: ["title", "description", "image", "roomClass"],
+  props:{ 
+    title: {
+      type: String,
+      required: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    image: {
+      type: String,
+      required: true,
+    },
+    type_room: {
+      type: String
+    },
+  },
   data() {
     return {
       showSearchForm: false,
@@ -162,32 +183,43 @@ export default {
           numberOfMembers: this.numberOfMembers,
           roomType: this.title,
         });
+        const roomID = response.data.data.room_id;
         if (response.status === 200) {
-          alert("Create room success!");
-          this.resetForm();
-          this.toggleCreateForm();  
+          // this.resetForm();
+          // this.toggleCreateForm();
+          toast.open({
+            message: 'Create room successfully!',
+            type: 'success',
+            position:"top-right"
+          });
+          this.$router.push('/roommusic/' + roomID);
         }
       } catch (error) {
-        alert("Create room fail!");
+        console.log(error);
+        toast.open({
+            message: 'Create room fail!',
+            type: 'warning',
+            position:"top-right"
+          });
       }
     },
 
-    async submitDataSearchRoom() {
-      try {
-        const response = await axiosPrivateInstance.post("/room/addNumberInRoom", {
-          roomID: this.roomID,
-        });
-        if (response.status === 200) {
-          console.log(response);  
-        }
-      } catch (error) {
-        console.log(JSON.parse(error.config.data).roomID);
-        if (error.response.status === 409) {
-          const roomID = JSON.parse(error.config.data).roomID;
-          this.$router.push('/roommusic/' + roomID);
-        }
-      }
-    },
+    // async submitDataSearchRoom() {
+    //   try {
+    //     const response = await axiosPrivateInstance.post("/room/addNumberInRoom", {
+    //       roomID: this.roomID,
+    //     });
+    //     if (response.status === 200) {
+    //       console.log(response);
+    //     }
+    //   } catch (error) {
+    //     console.log(JSON.parse(error.config.data).roomID);
+    //     if (error.response.status === 409) {
+    //       const roomID = JSON.parse(error.config.data).roomID;
+    //       this.$router.push('/roommusic/' + roomID);
+    //     }
+    //   }
+    // },
   },
 };
 </script>

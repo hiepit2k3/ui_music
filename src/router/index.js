@@ -5,13 +5,16 @@ import MusicPlayer from "@/views/MusicPlayer.vue";
 import RoomMove from "@/views/MoveView.vue";
 
 const routes = [
-  { path: "/", name: "home", component: HomeView },
+  {
+    path: "/",
+    name: "home",
+    component: HomeView
+  },
   {
     path: "/login",
     name: "login",
-    component: LoginForm,
+    component: LoginForm
   },
-  ,
   {
     path: "/roommusic/:roomid",
     name: "roommusic",
@@ -21,7 +24,7 @@ const routes = [
   {
     path: "/roommover",
     name: "roommover",
-    component: RoomMove,
+    component: RoomMove
   },
   {
     path: "/about",

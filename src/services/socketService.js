@@ -2,10 +2,13 @@ import { io } from "socket.io-client";
 
 let socket = null;
 
-const connectToNamespace = (namespace) => {
+const connectToNamespace = async (namespace) => {
   console.log(namespace);
   if (socket) {
-    socket.disconnect();
+    await new Promise((resolve) => {
+      socket.once("disconnect", resolve);
+      socket.disconnect();
+    });
   }
 
   socket = io(`http://ec2-34-229-20-179.compute-1.amazonaws.com/${namespace}`, {
@@ -24,7 +27,7 @@ const connectToNamespace = (namespace) => {
     console.log(`User ${data.userId} joined room ${data.roomId}`);
     // Cập nhật danh sách thành viên
   });
-  
+
   socket.on("userLeft", (data) => {
     console.log(`User ${data.userId} left room ${data.roomId}`);
     // Cập nhật danh sách thành viên
