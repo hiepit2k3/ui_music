@@ -67,7 +67,7 @@ const connectToSocket = async () => {
       musicState.youtubeVideoId = message.video_source;
       player.loadVideoById(musicState.youtubeVideoId);
       setTimeout(() => {
-        player.seekTo(10);
+        player.seekTo(3);
       }, 1000);
     } else {
       handleSocketAction(message);
