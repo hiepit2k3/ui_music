@@ -54,9 +54,9 @@ const searchMusic = async () => {
   }
 };
 
-const connectToSocket = () => {
+const connectToSocket = async () => {
   // Kết nối tới namespace "music"
-  socket = socketService.connectToNamespace("music");
+  socket = await socketService.connectToNamespace("music");
 
   // Tham gia phòng
   socketService.joinRoom(roomId.value);
