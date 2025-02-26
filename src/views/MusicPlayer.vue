@@ -67,7 +67,7 @@ const connectToSocket = async () => {
       musicState.youtubeVideoId = message.video_source;
       player.loadVideoById(musicState.youtubeVideoId);
       setTimeout(() => {
-        player.seekTo(3);
+        player.seekTo(1);
       }, 1000);
     } else {
       handleSocketAction(message);
@@ -77,6 +77,11 @@ const connectToSocket = async () => {
   socket.on("syncMusic", (data) => {
     console.log("Syncing music:", data);
     permission.value = data.role;
+    musicState.youtubeVideoId = message.video_source;
+      player.loadVideoById(musicState.youtubeVideoId);
+      setTimeout(() => {
+        player.seekTo(data.elapsedTime);
+      }, 1000);
   });
 };
 
@@ -159,7 +164,6 @@ const seekVideo = () => {
   });
 };
 
-// Format thời gian (giây -> phút:giây)
 const formatTime = (seconds) => {
   const minutes = Math.floor(seconds / 60);
   const secs = Math.floor(seconds % 60);
@@ -200,7 +204,6 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
-  // Ngắt kết nối WebSocket khi rời phòng
   disconnectFromSocket();
 });
 </script>
