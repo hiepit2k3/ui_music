@@ -76,12 +76,13 @@ const connectToSocket = async () => {
 
   socket.on("syncMusic", (data) => {
     console.log("Syncing music:", data);
+    onPlayerReady();
     permission.value = data.role;
-    musicState.youtubeVideoId = message.video_source;
-      player.loadVideoById(musicState.youtubeVideoId);
-      setTimeout(() => {
-        player.seekTo(data.elapsedTime);
-      }, 1000);
+    musicState.youtubeVideoId = data.track;
+    player.loadVideoById(musicState.youtubeVideoId);  
+    setTimeout(() => {
+      player.seekTo(data.elapsedTime);
+    }, 1000);
   });
 };
 
