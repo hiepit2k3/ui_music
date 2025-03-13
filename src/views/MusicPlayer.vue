@@ -76,7 +76,7 @@ const connectToSocket = async () => {
 
   socket.on("syncMusic", (data) => {
     console.log("Syncing music:", data);
-    onPlayerReady();
+    // onPlayerReady();
     permission.value = data.role;
     musicState.youtubeVideoId = data.track;
     player.loadVideoById(musicState.youtubeVideoId);  
