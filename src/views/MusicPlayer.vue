@@ -87,8 +87,12 @@ const connectToSocket = async () => {
 };
 
 const disconnectFromSocket = () => {
+  const data = {
+    roomId: roomId.value,
+    permission: permission.value,
+  };
   if (socket) {
-    socketService.leaveRoom(roomId.value);
+    socketService.leaveRoom(data);
     socket.disconnect();
     console.log("Disconnected from Music namespace");
   }
@@ -118,7 +122,6 @@ const handleSocketAction = (message) => {
   }
 };
 
-// Kiểm tra trạng thái của player
 const onPlayerStateChange = (event) => {
   if (event.data === YT.PlayerState.PLAYING) {
     isPlaying.value = true;
@@ -128,13 +131,12 @@ const onPlayerStateChange = (event) => {
   }
 };
 
-// Cập nhật thanh tiến trình
 const updateProgressBar = () => {
   if (isPlaying.value) {
     const interval = setInterval(() => {
-      currentTime.value = player.getCurrentTime(); // Cập nhật thời gian hiện tại
+      currentTime.value = player.getCurrentTime();
       if (!isPlaying.value) clearInterval(interval);
-    }, 1000); // Cập nhật mỗi giây
+    }, 1000);
   }
 };
 
@@ -185,10 +187,8 @@ const handleChooseMusic = (videoId) => {
 
 
 onMounted(() => {
-  // Kết nối tới WebSocket khi vào phòng
   connectToSocket();
 
-  // Tải và khởi tạo YouTube Iframe Player API
   const tag = document.createElement("script");
   tag.src = "https://www.youtube.com/iframe_api";
   document.body.appendChild(tag);
